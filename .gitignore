@@ -1,0 +1,122 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.svelte-kit/
+.solid/
+.snowpack/
+.vite/
+.temp/
+.temp_dir/
+
+# Serverless
+.serverless/
+.webpack/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Optional npm cache directory
+.npm/
+.pnpm-store/
+.yarn-cache/
+.yarn/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Misc
+*.tgz
+*.local
+*.log
+*.lock
+*.bak
+*.swp
+*.swo
+*.tmp
+*.tmp.*
+
+# VSCode
+.vscode/
+!.vscode/extensions.json
+
+# JetBrains IDEs
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+*.lnk
+
+# Linux
+*~
+
+# Docker
+docker-compose.override.yml
+docker-compose.dev.yml
+
+# TypeScript
+*.tsbuildinfo
+
+# ESLint cache
+.eslintcache
+
+# Prettier
+.prettierignore
+
+# Parcel
+.cache/
+
+# Storybook
+.storybook-out/
+storybook-static/
+
+# GitHub Codespaces
+*.code-workspace
+.devcontainer/
+
+# Firebase
+.firebase/
+.firebaserc
+
+# Vercel
+.vercel/
+
+# Netlify
+.netlify/
+
+# Git hooks
+.husky/
+
+# Others
+*.orig
+**/node_modules/
+**/dist/
+**/build/
