@@ -1,0 +1,154 @@
+[
+  {
+    "id": 101,
+    "title": "Sunset Paradise Villa",
+    "location": "Canggu, Bali, Indonesia",
+    "pricePerNight": 120,
+    "imageUrl": "https://example.com/images/bali-villa.jpg",
+    "rating": 4.8,
+    "numberOfGuests": 4,
+    "description": "A stunning beachfront villa with a private pool, just steps away from the surf.",
+    "amenities": ["WiFi", "Pool", "Air Conditioning", "Kitchen", "Beach Access"]
+  },
+  {
+    "id": 102,
+    "title": "Tokyo Skyline Loft",
+    "location": "Shibuya, Tokyo, Japan",
+    "pricePerNight": 95,
+    "imageUrl": "https://example.com/images/tokyo-loft.jpg",
+    "rating": 4.7,
+    "numberOfGuests": 2,
+    "description": "Sleek and stylish loft with panoramic city views, close to Shibuya Crossing.",
+    "amenities": ["WiFi", "Workspace", "Smart TV", "Washer", "Elevator"]
+  },
+  {
+    "id": 103,
+    "title": "Mountain Escape Cabin",
+    "location": "Banff, Alberta, Canada",
+    "pricePerNight": 150,
+    "imageUrl": "./src/assets/interior-5165340_1280.jpg",
+    "rating": 4.9,
+    "numberOfGuests": 6,
+    "description": "A charming wooden cabin with a hot tub, surrounded by breathtaking mountain views.",
+    "amenities": [
+      "Fireplace",
+      "Hot Tub",
+      "Kitchen",
+      "Hiking Trails",
+      "Pet-Friendly"
+    ]
+  },
+  {
+    "id": 104,
+    "title": "Burj View Penthouse",
+    "location": "Downtown Dubai, UAE",
+    "pricePerNight": 350,
+    "imageUrl": "./src/assets/bathroom-6686057_1280.jpg",
+    "rating": 5.0,
+    "numberOfGuests": 4,
+    "description": "Ultra-modern penthouse with direct views of the Burj Khalifa and private balcony.",
+    "amenities": [
+      "Infinity Pool",
+      "Gym",
+      "Concierge",
+      "Smart Home System",
+      "Parking"
+    ]
+  },
+  {
+    "id": 105,
+    "title": "Eiffel Tower Retreat",
+    "location": "Paris, France",
+    "pricePerNight": 130,
+    "imageUrl": "https://example.com/images/paris-apartment.jpg",
+    "rating": 4.6,
+    "numberOfGuests": 3,
+    "description": "Elegant apartment with a balcony offering a glimpse of the Eiffel Tower.",
+    "amenities": ["WiFi", "Coffee Maker", "Elevator", "Heating", "Hair Dryer"]
+  },
+  {
+    "id": 106,
+    "title": "Jungle Treehouse Oasis",
+    "location": "Santa Teresa, Costa Rica",
+    "pricePerNight": 110,
+    "imageUrl": "https://example.com/images/treehouse-cr.jpg",
+    "rating": 4.9,
+    "numberOfGuests": 2,
+    "description": "A unique eco-friendly treehouse nestled in the lush Costa Rican jungle.",
+    "amenities": [
+      "Outdoor Shower",
+      "Hammock",
+      "WiFi",
+      "Nature Views",
+      "Breakfast Included"
+    ]
+  },
+  {
+    "id": 107,
+    "title": "Brooklyn Heritage Home",
+    "location": "Williamsburg, New York, USA",
+    "pricePerNight": 180,
+    "imageUrl": "https://example.com/images/brooklyn-brownstone.jpg",
+    "rating": 4.7,
+    "numberOfGuests": 5,
+    "description": "A beautifully restored 19th-century brownstone with modern comforts.",
+    "amenities": [
+      "Garden",
+      "Washer/Dryer",
+      "Central Heating",
+      "High-Speed WiFi",
+      "Coffee Bar"
+    ]
+  },
+  {
+    "id": 108,
+    "title": "Aegean Blue Cottage",
+    "location": "Oia, Santorini, Greece",
+    "pricePerNight": 200,
+    "imageUrl": "https://example.com/images/santorini-cottage.jpg",
+    "rating": 4.8,
+    "numberOfGuests": 2,
+    "description": "A charming whitewashed cottage with a private terrace overlooking the Aegean Sea.",
+    "amenities": [
+      "WiFi",
+      "Terrace",
+      "Air Conditioning",
+      "Daily Cleaning",
+      "Sunset Views"
+    ]
+  },
+  {
+    "id": 109,
+    "title": "Alpine Snow Chalet",
+    "location": "Chamonix, France",
+    "pricePerNight": 250,
+    "imageUrl": "https://example.com/images/alps-chalet.jpg",
+    "rating": 4.9,
+    "numberOfGuests": 8,
+    "description": "A luxurious chalet with direct ski access and a cozy fireplace.",
+    "amenities": [
+      "Ski Storage",
+      "Sauna",
+      "Fireplace",
+      "Mountain Views",
+      "Fully Equipped Kitchen"
+    ]
+  },
+  {
+    "id": 110,
+    "title": "Sahara Sky Dome",
+    "location": "Merzouga, Morocco",
+    "pricePerNight": 90,
+    "imageUrl": "https://example.com/images/morocco-dome.jpg",
+    "rating": 4.7,
+    "numberOfGuests": 2,
+    "description": "A unique glamping experience under the stars in the Sahara Desert.",
+    "amenities": [
+      "Private Bathroom",
+      "Stargazing Deck",
+      "Breakfast Included",
+      "Campfire",
+      "Guided Tours"
+    ]
+  }
+]

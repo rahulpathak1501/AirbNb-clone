@@ -1,0 +1,29 @@
+.bookings-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.booking-card {
+  display: flex;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.booking-image {
+  width: 220px;
+  height: 160px;
+  object-fit: cover;
+}
+
+.booking-details {
+  padding: 1rem;
+  flex: 1;
+}
+
+.booking-details h2 {
+  margin: 0 0 8px;
+}
