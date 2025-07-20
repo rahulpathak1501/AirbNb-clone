@@ -120,3 +120,4 @@ storybook-static/
 **/node_modules/
 **/dist/
 **/build/
+Frontend/tsconfig.app.json
