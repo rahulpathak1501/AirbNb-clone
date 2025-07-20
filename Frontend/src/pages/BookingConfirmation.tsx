@@ -5,6 +5,7 @@ import axios from "axios";
 import "../style/BookingInvoice.css";
 
 const BookingInvoice = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const { id } = useParams();
   const [booking, setBooking] = useState<any>(null);
   const [error, setError] = useState("");
@@ -13,7 +14,7 @@ const BookingInvoice = () => {
     const fetchBooking = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`http://localhost:5000/bookings/${id}`, {
+        const res = await axios.get(`${apiUrl}/bookings/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setBooking(res.data);

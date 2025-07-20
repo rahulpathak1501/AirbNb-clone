@@ -7,6 +7,7 @@ interface Props {
 }
 
 const SignupForm: React.FC<Props> = ({ onSignup, switchToLogin }) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,7 +16,7 @@ const SignupForm: React.FC<Props> = ({ onSignup, switchToLogin }) => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/auth/signup", {
+      const res = await axios.post(`${apiUrl}/auth/signup`, {
         name,
         email,
         password,

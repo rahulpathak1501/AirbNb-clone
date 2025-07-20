@@ -3,6 +3,7 @@ import axios from "axios";
 import "../style/AddPropertyForm.css";
 
 const AddPropertyForm: React.FC = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -19,7 +20,7 @@ const AddPropertyForm: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://localhost:5000/properties",
+        `${apiUrl}/properties`,
         {
           title,
           description,

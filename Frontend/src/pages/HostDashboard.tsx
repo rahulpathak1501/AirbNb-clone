@@ -12,6 +12,7 @@ interface HostDashboardProps {
 }
 
 const HostDashboard: React.FC<HostDashboardProps> = ({ user }) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const [properties, setProperties] = useState([]);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
@@ -25,12 +26,9 @@ const HostDashboard: React.FC<HostDashboardProps> = ({ user }) => {
     if (!token) return;
 
     try {
-      const res = await axios.get(
-        "http://localhost:5000/properties/host/analytics",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await axios.get(`${apiUrl}/properties/host/analytics`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setAnalytics(res.data);
     } catch (err) {
       console.error("Error fetching analytics:", err);
@@ -41,7 +39,7 @@ const HostDashboard: React.FC<HostDashboardProps> = ({ user }) => {
     if (!token) return;
 
     try {
-      const res = await axios.get("http://localhost:5000/properties/host", {
+      const res = await axios.get(`${apiUrl}/properties/host`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -71,7 +69,7 @@ const HostDashboard: React.FC<HostDashboardProps> = ({ user }) => {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/properties/${id}`, {
+      await axios.delete(`${apiUrl}/properties/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

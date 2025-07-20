@@ -8,6 +8,7 @@ interface BookingFormProps {
 }
 
 const BookingForm: React.FC<BookingFormProps> = ({ onBookingSuccess }) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const { id } = useParams();
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
@@ -41,7 +42,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ onBookingSuccess }) => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        "http://localhost:5000/bookings",
+        `${apiUrl}/bookings`,
         {
           propertyId: id,
           checkIn,

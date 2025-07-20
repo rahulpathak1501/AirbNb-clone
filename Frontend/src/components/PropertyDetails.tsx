@@ -19,6 +19,7 @@ interface Property {
 }
 
 const PropertyDetail: React.FC = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const { id } = useParams<{ id: string }>();
   const [property, setProperty] = useState<Property | null>(null);
   const [checkIn, setCheckIn] = useState("");
@@ -28,35 +29,35 @@ const PropertyDetail: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
-    axios.get(`http://localhost:5000/properties/${id}`).then((res) => {
+    axios.get(`${apiUrl}/properties/${id}`).then((res) => {
       setProperty(res.data);
     });
   }, [id]);
 
-  const handleBooking = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return setMessage("Please log in first.");
+  // const handleBooking = async () => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) return setMessage("Please log in first.");
 
-    try {
-      await axios.post(
-        "http://localhost:5000/bookings",
-        {
-          propertyId: id,
-          checkIn,
-          checkOut,
-          guests,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setMessage("✅ Booking successful!");
-    } catch (err: any) {
-      setMessage(err?.response?.data?.msg || "❌ Booking failed.");
-    }
-  };
+  //   try {
+  //     await axios.post(
+  //       "http://localhost:5000/bookings",
+  //       {
+  //         propertyId: id,
+  //         checkIn,
+  //         checkOut,
+  //         guests,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+  //     setMessage("✅ Booking successful!");
+  //   } catch (err: any) {
+  //     setMessage(err?.response?.data?.msg || "❌ Booking failed.");
+  //   }
+  // };
 
   if (!property) return <div className="property-not-found">Loading...</div>;
 

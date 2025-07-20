@@ -4,6 +4,7 @@ import axios from "axios";
 import "../style/AddPropertyForm.css"; // reuse same styles as AddPropertyForm
 
 const EditPropertyForm: React.FC = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const { id } = useParams(); // URL param: /host/edit/:id
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -22,7 +23,7 @@ const EditPropertyForm: React.FC = () => {
   useEffect(() => {
     const fetchProperty = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/properties/${id}`);
+        const res = await axios.get(`${apiUrl}/properties/${id}`);
         const data = res.data;
 
         setFormData({
@@ -66,7 +67,7 @@ const EditPropertyForm: React.FC = () => {
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `http://localhost:5000/properties/${id}`,
+        `${apiUrl}/properties/${id}`,
         {
           ...formData,
           amenities: formData.amenities.split(",").map((a) => a.trim()),

@@ -5,13 +5,14 @@ import "../style/MyBookings.css";
 import { Link } from "react-router-dom";
 
 const MyBookings: React.FC = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchBookings = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/bookings", {
+      const res = await axios.get(`${apiUrl}/bookings`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -34,7 +35,7 @@ const MyBookings: React.FC = () => {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/bookings/${bookingId}`, {
+      await axios.delete(`${apiUrl}/bookings/${bookingId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
