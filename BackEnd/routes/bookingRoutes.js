@@ -9,7 +9,7 @@ function isOverlap(start1, end1, start2, end2) {
   return start1 < end2 && start2 < end1;
 }
 
-// POST /bookings - Create a new booking
+// ✅ POST /bookings - Create a new booking
 router.post("/", auth, async (req, res) => {
   try {
     const { propertyId, checkIn, checkOut, guests, customerName } = req.body;
@@ -68,12 +68,12 @@ router.post("/", auth, async (req, res) => {
 
     res.status(201).json(booking);
   } catch (err) {
-    console.error("Booking error:", err); // ✅ Add this
+    console.error("Booking error:", err);
     res.status(500).json({ msg: "Server error" });
   }
 });
 
-// 📌 GET /bookings - Get bookings for the logged-in user
+// ✅ GET /bookings - Get bookings for the logged-in user
 router.get("/", auth, async (req, res) => {
   try {
     const bookings = await Booking.find({ userId: req.user._id }).populate(
@@ -85,7 +85,36 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-// 📌 GET /bookings/host - Get bookings for host’s properties
+// ✅ GET /bookings/:id - Get booking by ID (for invoice)
+router.get("/:id", auth, async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+      .populate("propertyId", "title location pricePerNight hostId")
+      .populate("userId", "name email");
+
+    if (!booking) {
+      return res.status(404).json({ msg: "Booking not found" });
+    }
+
+    // Check if requester is owner or host
+    const isOwner = booking.userId._id.toString() === req.user._id.toString();
+    const isHost =
+      booking.propertyId?.hostId?.toString() === req.user._id.toString();
+
+    if (!isOwner && !isHost) {
+      return res
+        .status(403)
+        .json({ msg: "Not authorized to view this booking" });
+    }
+
+    res.json(booking);
+  } catch (err) {
+    console.error("Booking fetch error:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+// ✅ GET /bookings/host - Get bookings for host’s properties
 router.get("/host", auth, async (req, res) => {
   try {
     if (req.user.role !== "host")
@@ -97,13 +126,14 @@ router.get("/host", auth, async (req, res) => {
     const bookings = await Booking.find({
       propertyId: { $in: propertyIds },
     }).populate("propertyId userId");
+
     res.json(bookings);
   } catch (err) {
     res.status(500).json({ msg: "Server error" });
   }
 });
 
-// 📌 DELETE /bookings/:id - Cancel a booking
+// ✅ DELETE /bookings/:id - Cancel a booking
 router.delete("/:id", auth, async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);

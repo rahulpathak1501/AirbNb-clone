@@ -2,28 +2,18 @@ const express = require("express");
 const router = express.Router();
 const Property = require("../models/Property");
 const auth = require("../middlewares/authMiddleware");
+const Booking = require("../models/Booking");
 
-// router.get("/", async (req, res) => {
-//   try {
-//     const properties = await Property.find();
-//     res.json(properties);
-//   } catch (err) {
-//     console.error("Error fetching properties:", err);
-//     res.status(500).json({ msg: "Server error" });
-//   }
-// });
-// Fetch all properties
+// 📌 GET /properties - Public fetch with optional filters
 router.get("/", async (req, res) => {
   try {
     const { location, guests } = req.query;
     const filter = {};
 
-    // Fuzzy search by location
     if (location) {
       filter.location = { $regex: location, $options: "i" };
     }
 
-    // Filter by minimum number of guests
     if (guests) {
       filter.numberOfGuests = { $gte: parseInt(guests) };
     }
@@ -45,6 +35,7 @@ router.get("/host", auth, async (req, res) => {
     res.status(400).json({ msg: "Failed to fetch host properties" });
   }
 });
+
 // 📌 DELETE /properties/:id - Delete a property by host
 router.delete("/:id", auth, async (req, res) => {
   try {
@@ -53,7 +44,6 @@ router.delete("/:id", auth, async (req, res) => {
       return res.status(404).json({ msg: "Property not found" });
     }
 
-    // Ensure the logged-in host owns the property
     if (property.hostId.toString() !== req.user._id.toString()) {
       return res
         .status(403)
@@ -68,7 +58,7 @@ router.delete("/:id", auth, async (req, res) => {
   }
 });
 
-// ✅ Fetch single property by ID
+// 📌 GET /properties/:id - Fetch single property by ID
 router.get("/:id", async (req, res) => {
   try {
     const property = await Property.findById(req.params.id);
@@ -115,6 +105,76 @@ router.post("/", auth, async (req, res) => {
   } catch (err) {
     console.error("Error adding property:", err);
     res.status(500).json({ msg: "Server error while adding property" });
+  }
+});
+
+// 📌 PUT /properties/:id - Edit a property (host only)
+router.put("/:id", auth, async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    if (!property) return res.status(404).json({ msg: "Property not found" });
+
+    if (property.hostId.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ msg: "Not authorized to update this property" });
+    }
+
+    const updates = {
+      title: req.body.title,
+      description: req.body.description,
+      location: req.body.location,
+      pricePerNight: req.body.pricePerNight,
+      imageUrl: req.body.imageUrl,
+      numberOfGuests: req.body.numberOfGuests,
+      amenities: req.body.amenities,
+    };
+
+    const updated = await Property.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+    });
+
+    res.json(updated);
+  } catch (err) {
+    console.error("Error updating property:", err);
+    res.status(500).json({ msg: "Server error while updating property" });
+  }
+});
+
+// 📍 GET /host/analytics - Host Dashboard Stats
+router.get("/host/analytics", auth, async (req, res) => {
+  try {
+    if (req.user.role !== "host") {
+      return res.status(403).json({ msg: "Only hosts can access analytics" });
+    }
+
+    const hostId = req.user._id;
+
+    // 1. Active listings
+    const properties = await Property.find({ hostId });
+
+    // 2. Bookings for host's properties
+    const bookings = await Booking.find({
+      propertyId: { $in: properties.map((p) => p._id) },
+      status: "confirmed",
+    });
+
+    const totalBookings = bookings.length;
+
+    // 3. Earnings
+    const totalEarnings = bookings.reduce(
+      (sum, booking) => sum + booking.totalPrice,
+      0
+    );
+
+    res.json({
+      totalListings: properties.length,
+      totalBookings,
+      totalEarnings,
+    });
+  } catch (err) {
+    console.error("Analytics error:", err);
+    res.status(500).json({ msg: "Failed to fetch analytics" });
   }
 });
 

@@ -8,6 +8,8 @@ import SignupForm from "./components/auth/SignupForm";
 import MyBookings from "./pages/MyBookings";
 import HostDashboard from "./pages/HostDashboard";
 import AddPropertyForm from "./pages/AddPropertyForm";
+import BookingInvoice from "./pages/BookingConfirmation";
+import EditPropertyForm from "./pages/EditPropertyForm";
 
 interface User {
   name: string;
@@ -51,6 +53,8 @@ function App() {
             element={<HostDashboard user={user} />}
           />
           <Route path="/host/add-property" element={<AddPropertyForm />} />
+          <Route path="/booking/:id/invoice" element={<BookingInvoice />} />
+          <Route path="/host/edit/:id" element={<EditPropertyForm />} />
         </Routes>
       ) : showSignup ? (
         <SignupForm

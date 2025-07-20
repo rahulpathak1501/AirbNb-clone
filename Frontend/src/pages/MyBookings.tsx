@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Booking } from "../types/Booking";
 import "../style/MyBookings.css";
+import { Link } from "react-router-dom";
 
 const MyBookings: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -87,6 +88,12 @@ const MyBookings: React.FC = () => {
                   </button>
                 )}
               </div>
+              <Link
+                to={`/booking/${booking._id}/invoice`}
+                className="invoice-link"
+              >
+                View Invoice
+              </Link>
             </div>
           ))
       )}
