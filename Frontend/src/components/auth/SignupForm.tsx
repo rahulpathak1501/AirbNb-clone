@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "../../style/SignupForm.css";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   onSignup: () => void;
@@ -11,7 +13,16 @@ const SignupForm: React.FC<Props> = ({ onSignup, switchToLogin }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"" | "guest" | "host">(""); // default to guest
   const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      navigate("/");
+    }
+  }, []);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,27 +31,26 @@ const SignupForm: React.FC<Props> = ({ onSignup, switchToLogin }) => {
         name,
         email,
         password,
+        role,
       });
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       setError("");
       onSignup();
+      navigate("/");
     } catch (err: any) {
       setError(err?.response?.data?.msg || "Signup failed");
     }
   };
 
   return (
-    <form
-      onSubmit={handleSignup}
-      className="max-w-sm mx-auto bg-white p-6 rounded-lg shadow"
-    >
-      <h2 className="text-xl font-bold mb-4">Create Account</h2>
+    <form onSubmit={handleSignup} className="signup-form">
+      <h2>Create Account</h2>
+
       <input
         type="text"
         placeholder="Name"
-        className="border p-2 mb-3 w-full"
         value={name}
         onChange={(e) => setName(e.target.value)}
         required
@@ -48,7 +58,6 @@ const SignupForm: React.FC<Props> = ({ onSignup, switchToLogin }) => {
       <input
         type="email"
         placeholder="Email"
-        className="border p-2 mb-3 w-full"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -56,21 +65,32 @@ const SignupForm: React.FC<Props> = ({ onSignup, switchToLogin }) => {
       <input
         type="password"
         placeholder="Password"
-        className="border p-2 mb-3 w-full"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
       />
-      {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-      <button className="bg-green-600 text-white py-2 px-4 rounded w-full">
-        Sign Up
-      </button>
-      <p className="text-sm mt-3 text-center">
+
+      <select
+        value={role}
+        onChange={(e) => setRole(e.target.value as "guest" | "host")}
+        required
+      >
+        <option value={""} disabled>
+          Select a Role
+        </option>
+        <option value="guest">Guest</option>
+        <option value="host">Host</option>
+      </select>
+
+      {error && <p className="error-message">{error}</p>}
+      <button type="submit">Sign Up</button>
+
+      <p className="text-sm">
         Already have an account?{" "}
         <button
           type="button"
-          onClick={switchToLogin}
-          className="text-blue-600 underline"
+          className="text-blue-600"
+          onClick={() => navigate("/login")}
         >
           Log in
         </button>

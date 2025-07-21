@@ -6,14 +6,19 @@ const jwt = require("jsonwebtoken");
 
 // @route   POST /auth/signup
 router.post("/signup", async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
+
+  // Validate role
+  if (!["guest", "host", "admin"].includes(role)) {
+    return res.status(400).json({ msg: "Invalid role selected" });
+  }
 
   try {
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ msg: "User already exists" });
 
     const hashed = await bcrypt.hash(password, 10);
-    user = new User({ name, email, passwordHash: hashed });
+    user = new User({ name, email, passwordHash: hashed, role });
 
     await user.save();
 
@@ -23,7 +28,12 @@ router.post("/signup", async (req, res) => {
 
     res.json({
       token,
-      user: { id: user._id, name: user.name, email: user.email },
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (err) {
     res.status(500).json({ msg: "Server error" });

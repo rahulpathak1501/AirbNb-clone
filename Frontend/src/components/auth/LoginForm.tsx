@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { Navigate, useNavigate } from "react-router-dom";
+import "../../style/LoginForm.css";
 
 interface Props {
   onLogin: () => void;
@@ -8,36 +10,49 @@ interface Props {
 
 const LoginForm: React.FC<Props> = ({ onLogin, switchToSignup }) => {
   const apiUrl = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      navigate("/");
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const res = await axios.post(`${apiUrl}/auth/login`, {
         email,
         password,
       });
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      const { token, user } = res.data;
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
       setError("");
       onLogin();
+      navigate("/");
     } catch (err: any) {
       setError(err?.response?.data?.msg || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleLogin}
-      className="max-w-sm mx-auto bg-white p-6 rounded-lg shadow"
-    >
-      <h2 className="text-xl font-bold mb-4">Login</h2>
+    <form onSubmit={handleLogin} className="login-form">
+      <h2 className="form-title">Login</h2>
       <input
         type="email"
         placeholder="Email"
-        className="border p-2 mb-3 w-full"
+        className="form-input"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -45,22 +60,22 @@ const LoginForm: React.FC<Props> = ({ onLogin, switchToSignup }) => {
       <input
         type="password"
         placeholder="Password"
-        className="border p-2 mb-3 w-full"
+        className="form-input"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
       />
-      {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-      <button className="bg-blue-600 text-white py-2 px-4 rounded w-full">
-        Login
+      {error && <p className="form-error">{error}</p>}
+      <button className="form-button" disabled={loading}>
+        {loading ? "Logging in..." : "Login"}
       </button>
 
-      <p className="text-sm mt-3 text-center">
+      <p className="form-footer">
         Don't have an account?{" "}
         <button
           type="button"
-          onClick={switchToSignup}
-          className="text-blue-600 underline"
+          onClick={() => navigate("/signup")}
+          className="form-link"
         >
           Sign up
         </button>

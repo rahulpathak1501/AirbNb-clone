@@ -10,12 +10,9 @@ import HostDashboard from "./pages/HostDashboard";
 import AddPropertyForm from "./pages/AddPropertyForm";
 import BookingInvoice from "./pages/BookingConfirmation";
 import EditPropertyForm from "./pages/EditPropertyForm";
-
-interface User {
-  name: string;
-  email: string;
-  role: string;
-}
+import RoleBasedRoute from "./components/auth/RoleBasedRoute";
+import { User } from "./types/User";
+import NotFound from "./pages/NotFound";
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -43,30 +40,81 @@ function App() {
   return (
     <>
       <Navbar user={user} onLogout={handleLogout} />
-      {user ? (
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/property/:id" element={<PropertyDetail />} />
-          <Route path="/my-bookings" element={<MyBookings />} />
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/property/:id" element={<PropertyDetail />} />
+        <Route path="*" element={<NotFound />} />
+
+        {/* Auth Routes (login/signup) */}
+
+        <>
           <Route
-            path="/host/dashboard"
-            element={<HostDashboard user={user} />}
+            path="/login"
+            element={
+              <LoginForm
+                onLogin={handleAuthSuccess}
+                switchToSignup={() => setShowSignup(true)}
+              />
+            }
           />
-          <Route path="/host/add-property" element={<AddPropertyForm />} />
-          <Route path="/booking/:id/invoice" element={<BookingInvoice />} />
-          <Route path="/host/edit/:id" element={<EditPropertyForm />} />
-        </Routes>
-      ) : showSignup ? (
-        <SignupForm
-          onSignup={handleAuthSuccess}
-          switchToLogin={() => setShowSignup(false)}
+          <Route
+            path="/signup"
+            element={
+              <SignupForm
+                onSignup={handleAuthSuccess}
+                switchToLogin={() => setShowSignup(false)}
+              />
+            }
+          />
+        </>
+
+        {/* Guest-only Route */}
+        <Route
+          path="/my-bookings"
+          element={
+            <RoleBasedRoute user={user} allowedRoles={["guest"]}>
+              <MyBookings />
+            </RoleBasedRoute>
+          }
         />
-      ) : (
-        <LoginForm
-          onLogin={handleAuthSuccess}
-          switchToSignup={() => setShowSignup(true)}
+
+        {/* Host-only Routes */}
+        <Route
+          path="/host/dashboard"
+          element={
+            <RoleBasedRoute user={user} allowedRoles={["host"]}>
+              <HostDashboard user={user!} />
+            </RoleBasedRoute>
+          }
         />
-      )}
+        <Route
+          path="/host/add-property"
+          element={
+            <RoleBasedRoute user={user} allowedRoles={["host"]}>
+              <AddPropertyForm />
+            </RoleBasedRoute>
+          }
+        />
+        <Route
+          path="/host/edit/:id"
+          element={
+            <RoleBasedRoute user={user} allowedRoles={["host"]}>
+              <EditPropertyForm />
+            </RoleBasedRoute>
+          }
+        />
+
+        {/* Protected Booking Invoice (both guest/host can view) */}
+        <Route
+          path="/booking/:id/invoice"
+          element={
+            <RoleBasedRoute user={user} allowedRoles={["guest", "host"]}>
+              <BookingInvoice />
+            </RoleBasedRoute>
+          }
+        />
+      </Routes>
     </>
   );
 }
