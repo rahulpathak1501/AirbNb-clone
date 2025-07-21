@@ -9,11 +9,12 @@ interface Props {
 }
 
 const PropertyCard: React.FC<Props> = ({ property }) => {
+  const firstImage = property.images?.[0];
   return (
     <Link to={`/property/${property._id}`} className="property-card">
       <div className="image-wrapper">
         <ImageWithFallback
-          src={property.imageUrl}
+          src={firstImage}
           alt={property.title}
           className="property-image"
         />

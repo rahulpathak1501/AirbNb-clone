@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const uploadRoute = require("./routes/upload");
 
 const app = express();
 
@@ -11,6 +12,7 @@ app.use(express.json());
 app.use("/auth", require("./routes/authRoutes"));
 app.use("/properties", require("./routes/propertyRoutes"));
 app.use("/bookings", require("./routes/bookingRoutes"));
+app.use("/", uploadRoute);
 
 app.get("/", (req, res) => {
   res.send("API is running...");

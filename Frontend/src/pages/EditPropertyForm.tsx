@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import "../style/AddPropertyForm.css"; // reuse same styles as AddPropertyForm
+import "../style/AddPropertyForm.css";
 
 const EditPropertyForm: React.FC = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
-  const { id } = useParams(); // URL param: /host/edit/:id
+  // const apiUrl = "http://localhost:5000";
+  const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -20,19 +21,20 @@ const EditPropertyForm: React.FC = () => {
     amenities: "",
   });
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
   useEffect(() => {
     const fetchProperty = async () => {
       try {
         const res = await axios.get(`${apiUrl}/properties/${id}`);
         const data = res.data;
-
         setFormData({
           title: data.title,
           description: data.description,
           location: data.location,
           pricePerNight: data.pricePerNight,
           numberOfGuests: data.numberOfGuests,
-          imageUrl: data.imageUrl,
+          imageUrl: data.images?.[0] || data.imageUrl,
           amenities: data.amenities.join(", "),
         });
         setLoading(false);
@@ -45,6 +47,16 @@ const EditPropertyForm: React.FC = () => {
 
     fetchProperty();
   }, [id]);
+
+  const handleImageUpload = async (): Promise<string | null> => {
+    if (!imageFile) return null;
+
+    const formDataUpload = new FormData();
+    formDataUpload.append("image", imageFile);
+
+    const res = await axios.post(`${apiUrl}/upload`, formDataUpload);
+    return res.data.url;
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -64,12 +76,26 @@ const EditPropertyForm: React.FC = () => {
     setMessage("");
 
     try {
+      let finalImageUrl = formData.imageUrl;
+
+      if (imageFile) {
+        const uploadedUrl = await handleImageUpload();
+        if (uploadedUrl) {
+          finalImageUrl = uploadedUrl;
+        }
+      }
+      if (!finalImageUrl || finalImageUrl.trim() === "") {
+        setMessage("Please provide an image URL or upload a file.");
+        return;
+      }
+
       const token = localStorage.getItem("token");
 
       await axios.put(
         `${apiUrl}/properties/${id}`,
         {
           ...formData,
+          images: [finalImageUrl],
           amenities: formData.amenities.split(",").map((a) => a.trim()),
         },
         {
@@ -77,11 +103,12 @@ const EditPropertyForm: React.FC = () => {
         }
       );
 
-      setMessage("✅ Property updated successfully!");
+      setMessage("Property updated successfully!");
       setTimeout(() => navigate("/host/dashboard"), 1000);
     } catch (err: any) {
+      console.log(formData);
       console.error("Update failed:", err);
-      setMessage(err.response?.data?.msg || "❌ Failed to update property.");
+      setMessage(err.response?.data?.msg || "Failed to update property.");
     }
   };
 
@@ -136,7 +163,7 @@ const EditPropertyForm: React.FC = () => {
       <label>Amenities</label>
       <input
         name="amenities"
-        placeholder="Comma separated (e.g. WiFi, AC, Pool)"
+        placeholder="Comma separated"
         value={formData.amenities}
         onChange={handleChange}
       />
@@ -146,8 +173,17 @@ const EditPropertyForm: React.FC = () => {
         name="imageUrl"
         value={formData.imageUrl}
         onChange={handleChange}
-        required
       />
+
+      <label>Or Upload New Image</label>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+      />
+      {imageFile && (
+        <p style={{ color: "orange" }}>Uploaded image will override the URL.</p>
+      )}
 
       <button type="submit">Update Property</button>
       {message && <p className="form-message">{message}</p>}

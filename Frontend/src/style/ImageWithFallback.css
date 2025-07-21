@@ -1,31 +1,49 @@
-.blur-image-container {
+.image-fallback-wrapper {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 100%;
   overflow: hidden;
 }
 
-.blur-image {
+/* Blurred fallback image */
+.blurred-placeholder {
+  position: absolute;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: filter 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
-}
-
-.blur-image.loading {
   filter: blur(20px);
-  transform: scale(1.1);
-  opacity: 0.6;
+  transform: scale(1.05);
+  opacity: 1;
+  z-index: 1;
+  animation: fadeInBlur 0.5s ease-in-out forwards;
 }
 
-.blur-image.loaded {
-  filter: blur(0);
-  transform: scale(1);
-  opacity: 1;
+/* Fade-in animation for placeholder */
+@keyframes fadeInBlur {
+  0% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
 }
-.image-wrapper {
-  height: 180px;
-  overflow: hidden;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
+
+/* Main image */
+.main-image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.5s ease;
+  z-index: 2;
+}
+
+.main-image.hidden {
+  opacity: 0;
+}
+
+.main-image.visible {
+  opacity: 1;
 }

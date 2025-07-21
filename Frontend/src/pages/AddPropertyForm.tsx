@@ -11,13 +11,41 @@ const AddPropertyForm: React.FC = () => {
   const [guests, setGuests] = useState(1);
   const [amenities, setAmenities] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [message, setMessage] = useState("");
+
+  const handleImageUpload = async (): Promise<string | null> => {
+    try {
+      if (!imageFile) return null;
+
+      const formData = new FormData();
+      formData.append("image", imageFile);
+
+      const res = await axios.post(`${apiUrl}/api/upload`, formData);
+      return res.data.url;
+    } catch (error) {
+      console.error("Upload failed:", error);
+      setMessage("Image upload failed");
+      return null;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
 
     try {
+      let finalImageUrl = imageUrl;
+
+      if (!imageUrl && imageFile) {
+        finalImageUrl = await handleImageUpload();
+      }
+
+      if (!finalImageUrl || finalImageUrl.trim() === "") {
+        setMessage("Please provide an image URL or upload a file.");
+        return;
+      }
+
       const token = localStorage.getItem("token");
       const response = await axios.post(
         `${apiUrl}/properties`,
@@ -27,8 +55,11 @@ const AddPropertyForm: React.FC = () => {
           location,
           pricePerNight: price,
           numberOfGuests: guests,
-          amenities: amenities.split(",").map((a) => a.trim()),
-          images: [imageUrl],
+          amenities: amenities
+            .split(",")
+            .map((a) => a.trim())
+            .filter((a) => a),
+          images: [finalImageUrl],
         },
         {
           headers: {
@@ -38,7 +69,7 @@ const AddPropertyForm: React.FC = () => {
       );
 
       if (response.status === 201) {
-        setMessage("✅ Property listed successfully!");
+        setMessage("Property listed successfully!");
         setTitle("");
         setDescription("");
         setLocation("");
@@ -46,10 +77,11 @@ const AddPropertyForm: React.FC = () => {
         setGuests(1);
         setAmenities("");
         setImageUrl("");
+        setImageFile(null);
       }
     } catch (err: any) {
-      console.error(err);
-      setMessage(err.response?.data?.msg || "❌ Failed to add property.");
+      console.error("Property creation failed:", err);
+      setMessage(err.response?.data?.msg || "Failed to add property.");
     }
   };
 
@@ -57,60 +89,65 @@ const AddPropertyForm: React.FC = () => {
     <form className="add-property-form" onSubmit={handleSubmit}>
       <h2>Add New Property</h2>
 
-      <label htmlFor="title">Title</label>
+      <label>Title</label>
       <input
         type="text"
-        placeholder="Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         required
       />
-      <label htmlFor="location">Location</label>
+
+      <label>Location</label>
       <input
         type="text"
-        placeholder="Location"
         value={location}
         onChange={(e) => setLocation(e.target.value)}
         required
       />
-      <label htmlFor="price">Price Per Night</label>
+
+      <label>Price Per Night</label>
       <input
         type="number"
-        placeholder="Price Per Night"
         value={price}
         onChange={(e) => setPrice(parseFloat(e.target.value))}
         required
       />
-      <label htmlFor="guests">Max Guests</label>
+
+      <label>Max Guests</label>
       <input
         type="number"
-        placeholder="Max Guests"
         value={guests}
         onChange={(e) => setGuests(parseInt(e.target.value))}
         required
       />
-      <label htmlFor="description">Description</label>
+
+      <label>Description</label>
       <textarea
-        placeholder="Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         required
       ></textarea>
-      <label htmlFor="amenities">Amenities</label>
+
+      <label>Amenities (comma separated)</label>
       <input
         type="text"
-        placeholder="Amenities (comma separated)"
         value={amenities}
         onChange={(e) => setAmenities(e.target.value)}
         required
       />
 
+      <label>Image URL</label>
       <input
         type="text"
-        placeholder="Image URL"
         value={imageUrl}
         onChange={(e) => setImageUrl(e.target.value)}
-        required
+      />
+
+      <label>Or Upload Image</label>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setImageFile(e.target.files?.[0] || null)}
       />
 
       <button type="submit">Add Property</button>

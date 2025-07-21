@@ -107,7 +107,7 @@ const HostDashboard: React.FC<HostDashboardProps> = ({ user }) => {
           <div className="property-list">
             {properties.map((property: any) => (
               <div key={property._id} className="property-card">
-                <img src={property.imageUrl} alt={property.title} />
+                <img src={property.images?.[0]} alt={property.title} />
                 <div className="property-details">
                   <h3>{property.title}</h3>
                   <p>{property.location}</p>

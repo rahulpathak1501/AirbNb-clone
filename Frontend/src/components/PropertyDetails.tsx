@@ -5,18 +5,19 @@ import ImageWithFallback from "../components/ImageWithFallback";
 import { FaMapMarkerAlt, FaStar } from "react-icons/fa";
 import BookingForm from "./BookingForm";
 import "../style/PropertyDetail.css";
+import { Property } from "../types/Property";
 
-interface Property {
-  _id: string;
-  title: string;
-  location: string;
-  description: string;
-  imageUrl: string;
-  pricePerNight: number;
-  numberOfGuests: number;
-  rating: number;
-  amenities: string[];
-}
+// interface Property {
+//   _id: string;
+//   title: string;
+//   location: string;
+//   description: string;
+//   images: string[];
+//   pricePerNight: number;
+//   numberOfGuests: number;
+//   rating: number;
+//   amenities: string[];
+// }
 
 const PropertyDetail: React.FC = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -65,7 +66,7 @@ const PropertyDetail: React.FC = () => {
     <div className="property-detail-container">
       <div className="property-card-detail">
         <ImageWithFallback
-          src={property.imageUrl}
+          src={property.images?.[0]}
           alt={property.title}
           className="property-image"
         />

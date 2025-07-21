@@ -12,20 +12,27 @@ const ImageWithFallback: React.FC<Props> = ({ src, alt, className }) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
-  const handleLoad = () => setLoaded(true);
-  const handleError = () => {
-    setError(true);
-    setLoaded(true);
-  };
-
   return (
-    <div className={`blur-image-container ${className}`}>
+    <div className={`image-fallback-wrapper ${className}`}>
+      {/* Blurred placeholder */}
+      {!loaded && (
+        <img
+          src={defaultImage}
+          alt="placeholder"
+          className="blurred-placeholder fade-in"
+        />
+      )}
+
+      {/* Main image */}
       <img
         src={error ? defaultImage : src}
         alt={alt}
-        onLoad={handleLoad}
-        onError={handleError}
-        className={`blur-image ${loaded ? "loaded" : "loading"}`}
+        onLoad={() => setLoaded(true)}
+        onError={() => {
+          setError(true);
+          setLoaded(true);
+        }}
+        className={`main-image ${loaded ? "visible" : "hidden"}`}
       />
     </div>
   );
