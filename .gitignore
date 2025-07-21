@@ -121,3 +121,4 @@ storybook-static/
 **/dist/
 **/build/
 Frontend/tsconfig.app.json
+Backend/uploads
