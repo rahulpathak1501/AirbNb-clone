@@ -4,48 +4,52 @@ import "../style/AddPropertyForm.css";
 
 const AddPropertyForm: React.FC = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState(0);
   const [guests, setGuests] = useState(1);
   const [amenities, setAmenities] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [message, setMessage] = useState("");
 
-  const handleImageUpload = async (): Promise<string | null> => {
-    try {
-      if (!imageFile) return null;
+  const handleImageUpload = async (): Promise<string[]> => {
+    const uploadedUrls: string[] = [];
 
+    for (const file of imageFiles) {
       const formData = new FormData();
-      formData.append("image", imageFile);
-
-      const res = await axios.post(`${apiUrl}/api/upload`, formData);
-      return res.data.url;
-    } catch (error) {
-      console.error("Upload failed:", error);
-      setMessage("Image upload failed");
-      return null;
+      formData.append("image", file);
+      try {
+        const res = await axios.post(`${apiUrl}/upload`, formData);
+        uploadedUrls.push(res.data.url);
+      } catch (err) {
+        console.error("Upload failed for:", file.name, err);
+        setMessage("One or more image uploads failed.");
+      }
     }
+
+    return uploadedUrls;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
 
+    let finalImageUrls = [...imageUrls];
+
+    if (imageFiles.length > 0) {
+      const uploaded = await handleImageUpload();
+      finalImageUrls = finalImageUrls.concat(uploaded);
+    }
+
+    if (finalImageUrls.length === 0) {
+      setMessage("Please provide at least one image.");
+      return;
+    }
+
     try {
-      let finalImageUrl = imageUrl;
-
-      if (!imageUrl && imageFile) {
-        finalImageUrl = await handleImageUpload();
-      }
-
-      if (!finalImageUrl || finalImageUrl.trim() === "") {
-        setMessage("Please provide an image URL or upload a file.");
-        return;
-      }
-
       const token = localStorage.getItem("token");
       const response = await axios.post(
         `${apiUrl}/properties`,
@@ -58,8 +62,8 @@ const AddPropertyForm: React.FC = () => {
           amenities: amenities
             .split(",")
             .map((a) => a.trim())
-            .filter((a) => a),
-          images: [finalImageUrl],
+            .filter(Boolean),
+          images: finalImageUrls,
         },
         {
           headers: {
@@ -76,8 +80,8 @@ const AddPropertyForm: React.FC = () => {
         setPrice(0);
         setGuests(1);
         setAmenities("");
-        setImageUrl("");
-        setImageFile(null);
+        setImageUrls([]);
+        setImageFiles([]);
       }
     } catch (err: any) {
       console.error("Property creation failed:", err);
@@ -126,7 +130,7 @@ const AddPropertyForm: React.FC = () => {
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         required
-      ></textarea>
+      />
 
       <label>Amenities (comma separated)</label>
       <input
@@ -136,18 +140,26 @@ const AddPropertyForm: React.FC = () => {
         required
       />
 
-      <label>Image URL</label>
+      <label>Image URLs (comma separated)</label>
       <input
         type="text"
-        value={imageUrl}
-        onChange={(e) => setImageUrl(e.target.value)}
+        value={imageUrls.join(",")}
+        onChange={(e) =>
+          setImageUrls(
+            e.target.value
+              .split(",")
+              .map((url) => url.trim())
+              .filter(Boolean)
+          )
+        }
       />
 
-      <label>Or Upload Image</label>
+      <label>Or Upload Multiple Images</label>
       <input
         type="file"
         accept="image/*"
-        onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+        multiple
+        onChange={(e) => setImageFiles(Array.from(e.target.files || []))}
       />
 
       <button type="submit">Add Property</button>

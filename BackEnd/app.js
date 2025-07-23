@@ -13,6 +13,7 @@ app.use("/auth", require("./routes/authRoutes"));
 app.use("/properties", require("./routes/propertyRoutes"));
 app.use("/bookings", require("./routes/bookingRoutes"));
 app.use("/", uploadRoute);
+app.use("/reviews", require("./routes/reviews"));
 
 app.get("/", (req, res) => {
   res.send("API is running...");

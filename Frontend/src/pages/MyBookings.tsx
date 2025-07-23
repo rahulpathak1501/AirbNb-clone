@@ -3,6 +3,7 @@ import axios from "axios";
 import { Booking } from "../types/Booking";
 import "../style/MyBookings.css";
 import { Link } from "react-router-dom";
+import ImageWithFallback from "../components/ImageWithFallback";
 
 const MyBookings: React.FC = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -28,6 +29,9 @@ const MyBookings: React.FC = () => {
   useEffect(() => {
     fetchBookings();
   }, []);
+  useEffect(() => {
+    console.log(bookings);
+  }, [bookings]);
 
   const handleCancel = async (bookingId: string) => {
     if (!window.confirm("Are you sure you want to cancel this booking?"))
@@ -40,7 +44,6 @@ const MyBookings: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      // Update UI
       setBookings((prev) =>
         prev.map((b) =>
           b._id === bookingId ? { ...b, status: "cancelled" } : b
@@ -64,8 +67,8 @@ const MyBookings: React.FC = () => {
           .filter((booking) => booking.propertyId)
           .map((booking) => (
             <div key={booking._id} className="booking-card">
-              <img
-                src={booking.propertyId.imageUrl}
+              <ImageWithFallback
+                src={booking.propertyId?.images[0]}
                 alt={booking.propertyId.title}
                 className="booking-image"
               />

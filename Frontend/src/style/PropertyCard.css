@@ -10,6 +10,7 @@
   color: inherit;
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s ease;
 }
 
 .property-card:hover {
@@ -18,13 +19,26 @@
 
 .image-wrapper {
   position: relative;
+  height: 180px;
+  overflow: hidden;
+}
+
+.swiper {
+  height: 100%;
+  width: 100%;
+}
+
+.swiper-slide {
+  height: 100%;
+  width: 100%;
 }
 
 .property-image {
   width: 100%;
-  height: 180px;
+  height: 100%;
   object-fit: cover;
   display: block;
+  border-radius: 8px;
 }
 
 .badge {
@@ -63,4 +77,17 @@
 .property-meta {
   font-size: 14px;
   margin: 4px 0;
+}
+.property-card .image-wrapper {
+  position: relative;
+  height: 250px;
+  width: 100%;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.property-card .property-image {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
 }

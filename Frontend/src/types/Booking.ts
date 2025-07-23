@@ -5,7 +5,7 @@ export interface Booking {
     _id: string;
     title: string;
     location: string;
-    imageUrl: string;
+    images: string[];
     pricePerNight?: number;
   };
   checkIn: string;

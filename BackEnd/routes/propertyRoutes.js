@@ -3,6 +3,7 @@ const router = express.Router();
 const Property = require("../models/Property");
 const auth = require("../middlewares/authMiddleware");
 const Booking = require("../models/Booking");
+const Review = require("../models/Review");
 
 // 📌 GET /properties - Public fetch with optional filters
 router.get("/", async (req, res) => {
@@ -65,8 +66,19 @@ router.get("/:id", async (req, res) => {
     if (!property) {
       return res.status(404).json({ msg: "Property not found" });
     }
-    res.json(property);
+
+    // 👇 Compute average rating from reviews
+    const avgRating = await Review.aggregate([
+      { $match: { property: property._id } },
+      { $group: { _id: "$property", avgRating: { $avg: "$rating" } } },
+    ]);
+
+    res.json({
+      ...property.toObject(),
+      avgRating: avgRating[0]?.avgRating || 0,
+    });
   } catch (err) {
+    console.error("Error fetching property:", err);
     res.status(400).json({ msg: "Invalid property ID" });
   }
 });
