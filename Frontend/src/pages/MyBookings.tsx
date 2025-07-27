@@ -29,9 +29,6 @@ const MyBookings: React.FC = () => {
   useEffect(() => {
     fetchBookings();
   }, []);
-  useEffect(() => {
-    console.log(bookings);
-  }, [bookings]);
 
   const handleCancel = async (bookingId: string) => {
     if (!window.confirm("Are you sure you want to cancel this booking?"))

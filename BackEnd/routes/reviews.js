@@ -1,66 +1,153 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
+
 const Review = require("../models/Review");
+const Booking = require("../models/Booking");
+const Property = require("../models/Property");
 const authenticateUser = require("../middlewares/authMiddleware");
 
-// POST review
+// ✅ Helper to update avgRating on the property
+const updatePropertyAvgRating = async (propertyId) => {
+  const objectId = new mongoose.Types.ObjectId(propertyId); // Ensure ObjectId
+  const reviews = await Review.find({ property: objectId });
+  const avg =
+    reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      : 0;
+
+  await Property.findByIdAndUpdate(objectId, { avgRating: avg.toFixed(1) });
+};
+
+// ✅ POST review (only after stay)
 router.post("/:propertyId", authenticateUser, async (req, res) => {
   const { rating, comment } = req.body;
+  const { propertyId } = req.params;
+  const userId = req.user._id;
+
+  if (!mongoose.Types.ObjectId.isValid(propertyId)) {
+    return res.status(400).json({ error: "Invalid property ID" });
+  }
+
+  const objectId = new mongoose.Types.ObjectId(propertyId);
+
   try {
-    const review = new Review({
-      property: req.params.propertyId,
-      user: req.user._id,
-      rating,
-      comment,
-    });
     const existingReview = await Review.findOne({
-      property: req.params.propertyId,
-      user: req.user._id,
+      property: objectId,
+      user: userId,
     });
+
     if (existingReview) {
       return res
         .status(400)
         .json({ error: "You have already reviewed this property." });
     }
+
+    const hasStayed = await Booking.findOne({
+      property: objectId,
+      user: userId,
+      checkOutDate: { $lt: new Date() },
+      status: "confirmed",
+    });
+
+    if (!hasStayed) {
+      return res.status(403).json({
+        error: "Only guests who have completed their stay can review.",
+      });
+    }
+
+    const review = new Review({
+      property: objectId,
+      user: userId,
+      rating,
+      comment,
+    });
+
     await review.save();
+    await updatePropertyAvgRating(propertyId);
+
     res.status(201).json(review);
   } catch (err) {
-    res.status(400).json({ error: "Error posting review" });
+    console.error("Error creating review:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-// GET reviews for a property
+// ✅ GET all reviews for a property
 router.get("/:propertyId", async (req, res) => {
+  const { propertyId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(propertyId)) {
+    return res.status(400).json({ error: "Invalid property ID" });
+  }
+
+  const objectId = new mongoose.Types.ObjectId(propertyId);
+
   try {
-    const reviews = await Review.find({ property: req.params.propertyId })
+    const reviews = await Review.find({ property: objectId })
       .populate("user", "name")
       .sort({ createdAt: -1 });
-    res.json(reviews);
+
+    const avgRating = reviews.length
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      : 0;
+    console.log(avgRating);
+    res.json({ reviews, avgRating });
   } catch (err) {
+    console.error("Error fetching reviews:", err);
     res.status(500).json({ error: "Error fetching reviews" });
   }
 });
 
-module.exports = router;
-
-// PUT update review
+// ✅ PUT update review
 router.put("/:reviewId", authenticateUser, async (req, res) => {
-  const review = await Review.findById(req.params.reviewId);
-  if (!review || review.user.toString() !== req.user._id.toString()) {
-    return res.status(403).json({ error: "Unauthorized" });
+  const { reviewId } = req.params;
+
+  try {
+    const review = await Review.findById(reviewId);
+    if (!review) return res.status(404).json({ error: "Review not found" });
+
+    if (review.user.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to update this review" });
+    }
+
+    review.comment = req.body.comment;
+    review.rating = req.body.rating;
+
+    await review.save();
+    await updatePropertyAvgRating(review.property);
+
+    res.json(review);
+  } catch (err) {
+    console.error("Error updating review:", err);
+    res.status(500).json({ error: "Error updating review" });
   }
-  review.comment = req.body.comment;
-  review.rating = req.body.rating;
-  await review.save();
-  res.json(review);
 });
 
-// DELETE review
+// ✅ DELETE review
 router.delete("/:reviewId", authenticateUser, async (req, res) => {
-  const review = await Review.findById(req.params.reviewId);
-  if (!review || review.user.toString() !== req.user._id.toString()) {
-    return res.status(403).json({ error: "Unauthorized" });
+  const { reviewId } = req.params;
+
+  try {
+    const review = await Review.findById(reviewId);
+    if (!review) return res.status(404).json({ error: "Review not found" });
+
+    if (review.user.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to delete this review" });
+    }
+
+    await review.deleteOne();
+    await updatePropertyAvgRating(review.property);
+
+    res.json({ msg: "Review deleted" });
+  } catch (err) {
+    console.error("Error deleting review:", err);
+    res.status(500).json({ error: "Error deleting review" });
   }
-  await review.deleteOne();
-  res.json({ msg: "Review deleted" });
 });
+
+module.exports = router;
