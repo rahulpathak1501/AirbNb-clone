@@ -7,9 +7,9 @@ const Booking = require("../models/Booking");
 const Property = require("../models/Property");
 const authenticateUser = require("../middlewares/authMiddleware");
 
-// ✅ Helper to update avgRating on the property
+// Helper to update avgRating on the property
 const updatePropertyAvgRating = async (propertyId) => {
-  const objectId = new mongoose.Types.ObjectId(propertyId); // Ensure ObjectId
+  const objectId = new mongoose.Types.ObjectId(propertyId);
   const reviews = await Review.find({ property: objectId });
   const avg =
     reviews.length > 0
@@ -19,7 +19,7 @@ const updatePropertyAvgRating = async (propertyId) => {
   await Property.findByIdAndUpdate(objectId, { avgRating: avg.toFixed(1) });
 };
 
-// ✅ POST review (only after stay)
+// POST review (only after stay)
 router.post("/:propertyId", authenticateUser, async (req, res) => {
   const { rating, comment } = req.body;
   const { propertyId } = req.params;
@@ -73,7 +73,7 @@ router.post("/:propertyId", authenticateUser, async (req, res) => {
   }
 });
 
-// ✅ GET all reviews for a property
+// GET all reviews for a property
 router.get("/:propertyId", async (req, res) => {
   const { propertyId } = req.params;
 
@@ -91,7 +91,7 @@ router.get("/:propertyId", async (req, res) => {
     const avgRating = reviews.length
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
       : 0;
-    console.log(avgRating);
+
     res.json({ reviews, avgRating });
   } catch (err) {
     console.error("Error fetching reviews:", err);
@@ -99,7 +99,31 @@ router.get("/:propertyId", async (req, res) => {
   }
 });
 
-// ✅ PUT update review
+// GET eligibility check for review
+router.get("/eligibility/:propertyId", authenticateUser, async (req, res) => {
+  const { propertyId } = req.params;
+  const userId = req.user._id;
+
+  if (!mongoose.Types.ObjectId.isValid(propertyId)) {
+    return res.status(400).json({ error: "Invalid property ID" });
+  }
+
+  try {
+    const hasStayed = await Booking.findOne({
+      property: propertyId,
+      user: userId,
+      checkOutDate: { $lt: new Date() },
+      status: "confirmed",
+    });
+
+    res.json({ eligible: !!hasStayed });
+  } catch (err) {
+    console.error("Eligibility check error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// PUT update review
 router.put("/:reviewId", authenticateUser, async (req, res) => {
   const { reviewId } = req.params;
 
@@ -126,7 +150,7 @@ router.put("/:reviewId", authenticateUser, async (req, res) => {
   }
 });
 
-// ✅ DELETE review
+// DELETE review
 router.delete("/:reviewId", authenticateUser, async (req, res) => {
   const { reviewId } = req.params;
 
