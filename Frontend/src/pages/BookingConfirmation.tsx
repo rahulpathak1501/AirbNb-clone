@@ -47,11 +47,11 @@ const BookingInvoice = () => {
   return (
     <div className="invoice-container">
       <h2>Booking Invoice</h2>
-      <img
+      {/* <img
         src={propertyId.imageUrl}
         alt={propertyId.title}
         className="invoice-img"
-      />
+      /> */}
       <div className="invoice-details">
         <h3>{propertyId.title}</h3>
         <p>Location: {propertyId.location}</p>

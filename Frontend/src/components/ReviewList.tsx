@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { FaStar } from "react-icons/fa";
+import "../style/ReviewList.css";
 
 export type Review = {
   _id: string;
@@ -23,6 +24,8 @@ const ReviewList: React.FC<Props> = ({
   currentUserId,
   onRefresh,
 }) => {
+  // const apiUrl = import.meta.env.VITE_API_URL;
+  const apiUrl = "http://localhost:5000";
   const [editReviewId, setEditReviewId] = useState<string | null>(null);
   const [editedComment, setEditedComment] = useState("");
   const [editedRating, setEditedRating] = useState(0);
@@ -30,7 +33,12 @@ const ReviewList: React.FC<Props> = ({
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this review?")) return;
     try {
-      await axios.delete(`/api/reviews/${id}`);
+      await axios.delete(`${apiUrl}/reviews/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
       onRefresh();
     } catch (err) {
       console.error(err);
@@ -45,10 +53,19 @@ const ReviewList: React.FC<Props> = ({
 
   const handleUpdate = async () => {
     try {
-      await axios.put(`/api/reviews/${editReviewId}`, {
-        comment: editedComment,
-        rating: editedRating,
-      });
+      await axios.put(
+        `${apiUrl}/reviews/${editReviewId}`,
+        {
+          comment: editedComment,
+          rating: editedRating,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
       setEditReviewId(null);
       onRefresh();
     } catch (err) {
@@ -107,10 +124,10 @@ const ReviewList: React.FC<Props> = ({
             <div>
               <div className="flex justify-between items-center">
                 <div className="font-medium">
-                  {review.user.name} ·{" "}
+                  {review.user?.name || "Anonymous"} ·{" "}
                   <FaStar className="inline text-yellow-400" /> {review.rating}
                 </div>
-                {review.user._id === currentUserId && (
+                {review.user?._id === currentUserId && (
                   <div className="text-sm text-right space-x-2">
                     <button
                       onClick={() => handleEdit(review)}

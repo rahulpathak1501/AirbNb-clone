@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import "../style/ReviewForm.css";
 
 type Props = {
   propertyId: string;
@@ -8,6 +9,8 @@ type Props = {
 };
 
 const ReviewForm: React.FC<Props> = ({ propertyId, onReviewSubmitted }) => {
+  // const apiUrl = import.meta.env.VITE_API_URL;
+  const apiUrl = "http://localhost:5000";
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,7 +25,7 @@ const ReviewForm: React.FC<Props> = ({ propertyId, onReviewSubmitted }) => {
     try {
       setLoading(true);
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/reviews/${propertyId}`,
+        `${apiUrl}/reviews/${propertyId}`,
         { rating, comment },
         {
           headers: {
@@ -35,6 +38,7 @@ const ReviewForm: React.FC<Props> = ({ propertyId, onReviewSubmitted }) => {
       setComment("");
       onReviewSubmitted();
     } catch (err: any) {
+      console.log("inside catch");
       toast.error(
         err.response?.data?.error || "Failed to submit review. Try again."
       );

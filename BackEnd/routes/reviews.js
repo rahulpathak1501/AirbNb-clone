@@ -36,7 +36,6 @@ router.post("/:propertyId", authenticateUser, async (req, res) => {
       property: objectId,
       user: userId,
     });
-
     if (existingReview) {
       return res
         .status(400)
@@ -44,12 +43,11 @@ router.post("/:propertyId", authenticateUser, async (req, res) => {
     }
 
     const hasStayed = await Booking.findOne({
-      property: objectId,
-      user: userId,
-      checkOutDate: { $lt: new Date() },
+      propertyId: new mongoose.Types.ObjectId(propertyId),
+      userId,
+      checkOut: { $lt: new Date() },
       status: "confirmed",
     });
-
     if (!hasStayed) {
       return res.status(403).json({
         error: "Only guests who have completed their stay can review.",
@@ -62,7 +60,6 @@ router.post("/:propertyId", authenticateUser, async (req, res) => {
       rating,
       comment,
     });
-
     await review.save();
     await updatePropertyAvgRating(propertyId);
 
@@ -110,12 +107,11 @@ router.get("/eligibility/:propertyId", authenticateUser, async (req, res) => {
 
   try {
     const hasStayed = await Booking.findOne({
-      property: propertyId,
-      user: userId,
-      checkOutDate: { $lt: new Date() },
+      propertyId: new mongoose.Types.ObjectId(propertyId),
+      userId,
+      checkOut: { $lt: new Date() },
       status: "confirmed",
     });
-
     res.json({ eligible: !!hasStayed });
   } catch (err) {
     console.error("Eligibility check error:", err);

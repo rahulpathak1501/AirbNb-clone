@@ -1,0 +1,110 @@
+.review-list {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #f9f9ff;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+}
+
+.review-list h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.review-list .avg-rating {
+  font-size: 1.1rem;
+  color: #ffb400;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.review-item {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-left: 6px solid #4f46e5;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.review-item .review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.3rem;
+}
+
+.review-item .review-header .author {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.review-item .review-header .actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-left: 10px;
+}
+
+.review-item .review-header .actions button:hover {
+  text-decoration: underline;
+}
+
+.review-item .review-header .actions .edit {
+  color: #3b82f6;
+}
+
+.review-item .review-header .actions .delete {
+  color: #ef4444;
+}
+
+.review-item p {
+  color: #374151;
+  margin-top: 0.3rem;
+}
+
+.review-item small {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.review-item textarea,
+.review-item input[type="number"] {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 1rem;
+  margin-top: 4px;
+}
+
+.review-item .btn-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.review-item .btn-group button {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.review-item .btn-group .save {
+  background-color: #22c55e;
+  color: white;
+}
+
+.review-item .btn-group .cancel {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}

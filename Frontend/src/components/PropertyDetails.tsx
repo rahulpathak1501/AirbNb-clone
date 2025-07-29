@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import ImageWithFallback from "../components/ImageWithFallback";
-import { FaMapMarkerAlt, FaStar, FaRegStar } from "react-icons/fa";
-// import { FaStar, FaRegStar } from "react-icons/fa";
+import { FaMapMarkerAlt, FaStar } from "react-icons/fa";
 import BookingForm from "./BookingForm";
 import "../style/PropertyDetail.css";
 import { Property } from "../types/Property";
@@ -15,19 +14,55 @@ import ReviewList from "./ReviewList";
 import ReviewForm from "./ReviewForm";
 
 const PropertyDetail: React.FC = () => {
-  const apiUrl = import.meta.env.VITE_API_URL;
+  // const apiUrl = import.meta.env.VITE_API_URL;
+  const apiUrl = "http://localhost:5000";
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const token = localStorage.getItem("token") || "{}";
   const { id } = useParams<{ id: string }>();
   const [property, setProperty] = useState<Property | null>(null);
   const [message, setMessage] = useState("");
   const [reviews, setReviews] = useState([]);
+  const [avgRating, setAvgRating] = useState<number>(0);
+  const [isEligible, setIsEligible] = useState(false);
+
+  const currentUserId = user?.id || "";
 
   const fetchReviews = async () => {
-    const res = await axios.get(`${apiUrl}/reviews/${property?._id}`);
-    setReviews(res.data);
+    if (!property?._id) return;
+    try {
+      const res = await axios.get(`${apiUrl}/reviews/${property._id}`);
+      const { reviews, avgRating } = res.data;
+      setReviews(reviews);
+      setAvgRating(avgRating);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  };
+
+  const checkReviewEligibility = async () => {
+    if (!property?._id || !currentUserId) return;
+    try {
+      // console.log("inside try");
+      const res = await axios.get(
+        `${apiUrl}/reviews/eligibility/${property._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setIsEligible(res.data.eligible);
+    } catch (error) {
+      console.log("inside catch");
+      console.warn("Review eligibility check failed:", error);
+    }
   };
 
   useEffect(() => {
-    fetchReviews();
+    if (property?._id) {
+      fetchReviews();
+      checkReviewEligibility();
+    }
   }, [property?._id]);
 
   useEffect(() => {
@@ -47,10 +82,7 @@ const PropertyDetail: React.FC = () => {
           slidesPerView={1}
           loop={property.images.length > 1}
           pagination={{ clickable: true }}
-          autoplay={{
-            delay: 3000,
-            disableOnInteraction: false,
-          }}
+          autoplay={{ delay: 3000, disableOnInteraction: false }}
           modules={[Pagination, Autoplay]}
           className="property-image-swiper"
         >
@@ -77,7 +109,6 @@ const PropertyDetail: React.FC = () => {
           </div>
           <p className="property-detail-description">{property.description}</p>
           <div className="property-detail-rating">
-            {/* <FaStar className="icon star-icon" /> */}
             {property.avgRating?.toFixed(1) || "0.0"}{" "}
             <FaStar className="icon star-icon" /> · Guests:{" "}
             {property.numberOfGuests}
@@ -95,11 +126,18 @@ const PropertyDetail: React.FC = () => {
           </div>
 
           <BookingForm onBookingSuccess={setMessage} />
-          <ReviewList reviews={reviews} />
-          <ReviewForm
-            propertyId={property._id}
-            onReviewSubmitted={fetchReviews}
+          <ReviewList
+            reviews={reviews}
+            avgRating={avgRating}
+            currentUserId={currentUserId}
+            onRefresh={fetchReviews}
           />
+          {isEligible && (
+            <ReviewForm
+              propertyId={property._id}
+              onReviewSubmitted={fetchReviews}
+            />
+          )}
         </div>
       </div>
     </div>

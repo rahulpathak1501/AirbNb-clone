@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Booking } from "../types/Booking";
 import "../style/MyBookings.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ImageWithFallback from "../components/ImageWithFallback";
 
 const MyBookings: React.FC = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchBookings = async () => {
     try {
@@ -62,41 +63,71 @@ const MyBookings: React.FC = () => {
       ) : (
         bookings
           .filter((booking) => booking.propertyId)
-          .map((booking) => (
-            <div key={booking._id} className="booking-card">
-              <ImageWithFallback
-                src={booking.propertyId?.images[0]}
-                alt={booking.propertyId.title}
-                className="booking-image"
-              />
-              <div className="booking-details">
-                <h2>{booking.propertyId.title}</h2>
-                <p>{booking.propertyId.location}</p>
-                <p>
-                  {new Date(booking.checkIn).toLocaleDateString()} →{" "}
-                  {new Date(booking.checkOut).toLocaleDateString()}
-                </p>
-                <p>Guests: {booking.guests}</p>
-                <p>Total: ₹{booking.totalPrice}</p>
-                <p>Status: {booking.status}</p>
+          .map((booking) => {
+            const checkOutDate = new Date(booking.checkOut);
+            const today = new Date();
+            const hasStayed = checkOutDate < today;
 
-                {booking.status === "confirmed" && (
-                  <button
-                    className="cancel-btn"
-                    onClick={() => handleCancel(booking._id)}
+            return (
+              <div key={booking._id} className="booking-card">
+                <div
+                  className="clickable"
+                  onClick={() =>
+                    navigate(`/property/${booking.propertyId._id}`)
+                  }
+                >
+                  <ImageWithFallback
+                    src={booking.propertyId.images[0]}
+                    alt={booking.propertyId.title}
+                    className="booking-image"
+                  />
+                </div>
+
+                <div className="booking-details">
+                  <h2
+                    className="clickable"
+                    onClick={() =>
+                      navigate(`/property/${booking.propertyId._id}`)
+                    }
                   >
-                    Cancel Booking
-                  </button>
-                )}
+                    {booking.propertyId.title}
+                  </h2>
+                  <p>{booking.propertyId.location}</p>
+                  <p>
+                    {new Date(booking.checkIn).toLocaleDateString()} →{" "}
+                    {new Date(booking.checkOut).toLocaleDateString()}
+                  </p>
+                  <p>Guests: {booking.guests}</p>
+                  <p>Total: ₹{booking.totalPrice}</p>
+                  <p>Status: {booking.status}</p>
+
+                  {booking.status === "confirmed" &&
+                    (hasStayed ? (
+                      <Link
+                        to={`/property/${booking.propertyId._id}#review-form`}
+                        className="review-btn"
+                      >
+                        Leave a Review
+                      </Link>
+                    ) : (
+                      <button
+                        className="cancel-btn"
+                        onClick={() => handleCancel(booking._id)}
+                      >
+                        Cancel Booking
+                      </button>
+                    ))}
+                </div>
+
+                <Link
+                  to={`/booking/${booking._id}/invoice`}
+                  className="invoice-link"
+                >
+                  View Invoice
+                </Link>
               </div>
-              <Link
-                to={`/booking/${booking._id}/invoice`}
-                className="invoice-link"
-              >
-                View Invoice
-              </Link>
-            </div>
-          ))
+            );
+          })
       )}
     </div>
   );
