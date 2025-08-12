@@ -112,7 +112,11 @@ router.get("/eligibility/:propertyId", authenticateUser, async (req, res) => {
       checkOut: { $lt: new Date() },
       status: "confirmed",
     });
-    res.json({ eligible: !!hasStayed });
+    const alreadyReviewed = await Review.findOne({
+      property: new mongoose.Types.ObjectId(propertyId),
+      user: userId,
+    });
+    res.json({ eligible: !!hasStayed && !alreadyReviewed });
   } catch (err) {
     console.error("Eligibility check error:", err);
     res.status(500).json({ error: "Server error" });

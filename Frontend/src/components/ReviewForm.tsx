@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import "../style/ReviewForm.css";
+import { reviewApi } from "../apiServices/apiServices";
 
 type Props = {
   propertyId: string;
@@ -24,21 +25,13 @@ const ReviewForm: React.FC<Props> = ({ propertyId, onReviewSubmitted }) => {
 
     try {
       setLoading(true);
-      await axios.post(
-        `${apiUrl}/reviews/${propertyId}`,
-        { rating, comment },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const data = { rating, comment };
+      await reviewApi.addReview(propertyId, data);
       toast.success("Review submitted!");
       setRating(5);
       setComment("");
       onReviewSubmitted();
     } catch (err: any) {
-      console.log("inside catch");
       toast.error(
         err.response?.data?.error || "Failed to submit review. Try again."
       );

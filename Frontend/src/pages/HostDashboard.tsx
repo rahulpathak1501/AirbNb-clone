@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import "../style/HostDashboard.css";
 import { useNavigate, Link } from "react-router-dom";
+import { hostApi } from "../apiServices/apiServices";
 
 interface HostDashboardProps {
   user: {
@@ -12,39 +12,27 @@ interface HostDashboardProps {
 }
 
 const HostDashboard: React.FC<HostDashboardProps> = ({ user }) => {
-  const apiUrl = import.meta.env.VITE_API_URL;
   const [properties, setProperties] = useState([]);
   const [message, setMessage] = useState("");
-  const navigate = useNavigate();
   const [analytics, setAnalytics] = useState<{
     totalBookings: number;
     totalEarnings: number;
     totalListings: number;
   } | null>(null);
-  const fetchAnalytics = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+  const navigate = useNavigate();
 
+  const fetchAnalytics = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/properties/host/analytics`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await hostApi.getAnalytics();
       setAnalytics(res.data);
     } catch (err) {
       console.error("Error fetching analytics:", err);
     }
   };
+
   const fetchProperties = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
     try {
-      const res = await axios.get(`${apiUrl}/properties/host`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+      const res = await hostApi.getProperties();
       if (res.data.length === 0) {
         setMessage("You haven’t listed any properties yet.");
       } else {
@@ -56,31 +44,27 @@ const HostDashboard: React.FC<HostDashboardProps> = ({ user }) => {
     }
   };
 
-  useEffect(() => {
-    fetchAnalytics();
-    fetchProperties();
-  }, [user]);
-
   const handleDelete = async (id: string) => {
-    const confirm = window.confirm(
+    const confirmDelete = window.confirm(
       "Are you sure you want to delete this property?"
     );
-    if (!confirm) return;
+    if (!confirmDelete) return;
 
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`${apiUrl}/properties/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      // Remove the deleted property from UI
+      await hostApi.deleteProperty(id);
       setProperties((prev) => prev.filter((p: any) => p._id !== id));
     } catch (err: any) {
       console.error("Failed to delete property:", err);
       alert(err.response?.data?.msg || "Failed to delete.");
     }
   };
+
+  useEffect(() => {
+    if (user && user.role === "host") {
+      fetchAnalytics();
+      fetchProperties();
+    }
+  }, [user]);
 
   if (!user || user.role !== "host") {
     return (

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import ImageWithFallback from "../components/ImageWithFallback";
 import { FaMapMarkerAlt, FaStar } from "react-icons/fa";
 import BookingForm from "./BookingForm";
@@ -12,12 +11,12 @@ import "swiper/css";
 import "swiper/css/pagination";
 import ReviewList from "./ReviewList";
 import ReviewForm from "./ReviewForm";
+import { propertyApi, reviewApi } from "../apiServices/apiServices";
 
 const PropertyDetail: React.FC = () => {
-  // const apiUrl = import.meta.env.VITE_API_URL;
-  const apiUrl = "http://localhost:5000";
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const token = localStorage.getItem("token") || "{}";
+  const token = localStorage.getItem("token");
+  console.log("Frontend token:", token);
+
   const { id } = useParams<{ id: string }>();
   const [property, setProperty] = useState<Property | null>(null);
   const [message, setMessage] = useState("");
@@ -25,12 +24,10 @@ const PropertyDetail: React.FC = () => {
   const [avgRating, setAvgRating] = useState<number>(0);
   const [isEligible, setIsEligible] = useState(false);
 
-  const currentUserId = user?.id || "";
-
   const fetchReviews = async () => {
     if (!property?._id) return;
     try {
-      const res = await axios.get(`${apiUrl}/reviews/${property._id}`);
+      const res = await reviewApi.getReviews(property._id);
       const { reviews, avgRating } = res.data;
       setReviews(reviews);
       setAvgRating(avgRating);
@@ -40,20 +37,12 @@ const PropertyDetail: React.FC = () => {
   };
 
   const checkReviewEligibility = async () => {
-    if (!property?._id || !currentUserId) return;
+    if (!property?._id) return;
     try {
-      // console.log("inside try");
-      const res = await axios.get(
-        `${apiUrl}/reviews/eligibility/${property._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await reviewApi.checkEligibility(property._id);
+      console.log("Eligibility API response:", res.data); // ✅ Debug
       setIsEligible(res.data.eligible);
     } catch (error) {
-      console.log("inside catch");
       console.warn("Review eligibility check failed:", error);
     }
   };
@@ -67,9 +56,7 @@ const PropertyDetail: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
-    axios.get(`${apiUrl}/properties/${id}`).then((res) => {
-      setProperty(res.data);
-    });
+    propertyApi.getById(id).then((res) => setProperty(res.data));
   }, [id]);
 
   if (!property) return <div className="property-not-found">Loading...</div>;
@@ -126,17 +113,26 @@ const PropertyDetail: React.FC = () => {
           </div>
 
           <BookingForm onBookingSuccess={setMessage} />
+
           <ReviewList
             reviews={reviews}
             avgRating={avgRating}
-            currentUserId={currentUserId}
+            currentUserId={
+              JSON.parse(localStorage.getItem("user") || "{}")?.id || ""
+            }
             onRefresh={fetchReviews}
           />
-          {isEligible && (
+
+          {isEligible ? (
             <ReviewForm
               propertyId={property._id}
               onReviewSubmitted={fetchReviews}
             />
+          ) : (
+            <p className="review-info-text">
+              You are not eligible to leave a review (either you haven't stayed
+              or you've already reviewed).
+            </p>
           )}
         </div>
       </div>

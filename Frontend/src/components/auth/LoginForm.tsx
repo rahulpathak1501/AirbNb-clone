@@ -1,58 +1,47 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Navigate, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { authApi } from "../../apiServices/apiServices";
 import "../../style/LoginForm.css";
 
-interface Props {
-  onLogin: () => void;
-  switchToSignup: () => void;
-}
-
-const LoginForm: React.FC<Props> = ({ onLogin, switchToSignup }) => {
-  const apiUrl = import.meta.env.VITE_API_URL;
-  const navigate = useNavigate();
-
+const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { user, login } = useAuth();
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      navigate("/");
-    }
-  }, []);
+    if (user) navigate("/");
+  }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      setError("Please fill all fields.");
+      return;
+    }
     setLoading(true);
     try {
-      const res = await axios.post(`${apiUrl}/auth/login`, {
-        email,
-        password,
-      });
-
-      const { token, user } = res.data;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      setError("");
-      onLogin();
+      const { data } = await authApi.login(email, password);
+      login(data.user, data.token);
       navigate("/");
     } catch (err: any) {
-      setError(err?.response?.data?.msg || "Login failed");
+      setError(err?.response?.data?.msg || "Login failed.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleLogin} className="login-form">
+    <form onSubmit={handleLogin} className="form-container">
       <h2 className="form-title">Login</h2>
       <input
         type="email"
         placeholder="Email"
-        className="form-input"
+        className="input"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -60,22 +49,25 @@ const LoginForm: React.FC<Props> = ({ onLogin, switchToSignup }) => {
       <input
         type="password"
         placeholder="Password"
-        className="form-input"
+        className="input"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
       />
       {error && <p className="form-error">{error}</p>}
-      <button className="form-button" disabled={loading}>
+      <button
+        type="submit"
+        className="btn btn-primary w-full"
+        disabled={loading}
+      >
         {loading ? "Logging in..." : "Login"}
       </button>
-
       <p className="form-footer">
         Don't have an account?{" "}
         <button
           type="button"
-          onClick={() => navigate("/signup")}
           className="form-link"
+          onClick={() => navigate("/signup")}
         >
           Sign up
         </button>

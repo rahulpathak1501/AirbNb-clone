@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "../style/BookingForm.css";
-import { useParams } from "react-router-dom";
+import { data, useParams } from "react-router-dom";
+import { bookingApi } from "../apiServices/apiServices";
 
 interface BookingFormProps {
   onBookingSuccess: (message: string) => void;
@@ -40,28 +41,21 @@ const BookingForm: React.FC<BookingFormProps> = ({ onBookingSuccess }) => {
     }
 
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.post(
-        `${apiUrl}/bookings`,
-        {
-          propertyId: id,
-          checkIn,
-          checkOut,
-          guests,
-          customerName,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const bookingData = {
+        propertyId: id,
+        checkIn,
+        checkOut,
+        guests,
+        customerName,
+      };
+
+      const res = await bookingApi.createBooking(bookingData);
 
       if (res.status === 201) {
         onBookingSuccess("✅ Booking successful!");
       }
     } catch (err: any) {
-      const errorMsg = err.response?.data?.msg || "❌ Booking failed.";
+      const errorMsg = err?.response?.data?.msg || "❌ Booking failed.";
       setError(errorMsg);
     }
   };

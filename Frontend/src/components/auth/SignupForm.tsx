@@ -1,56 +1,53 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import "../../style/SignupForm.css";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { authApi } from "../../apiServices/apiServices";
+import "../../style/SignupForm.css";
 
-interface Props {
-  onSignup: () => void;
-  switchToLogin: () => void;
-}
-
-const SignupForm: React.FC<Props> = ({ onSignup, switchToLogin }) => {
-  const apiUrl = import.meta.env.VITE_API_URL;
+const SignupForm: React.FC = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"" | "guest" | "host">(""); // default to guest
+  const [role, setRole] = useState<"guest" | "host">("guest");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { user, login } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      navigate("/");
-    }
-  }, []);
+    if (user) navigate("/");
+  }, [user, navigate]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name || !email || !password) {
+      setError("All fields are required.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    setLoading(true);
     try {
-      const res = await axios.post(`${apiUrl}/auth/signup`, {
-        name,
-        email,
-        password,
-        role,
-      });
-
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      setError("");
-      onSignup();
+      const { data } = await authApi.signup(name, email, password, role);
+      login(data.user, data.token);
       navigate("/");
     } catch (err: any) {
-      setError(err?.response?.data?.msg || "Signup failed");
+      setError(err?.response?.data?.msg || "Signup failed.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSignup} className="signup-form">
-      <h2>Create Account</h2>
-
+    <form onSubmit={handleSignup} className="form-container">
+      <h2 className="form-title">Create Account</h2>
       <input
         type="text"
         placeholder="Name"
+        className="input"
         value={name}
         onChange={(e) => setName(e.target.value)}
         required
@@ -58,6 +55,7 @@ const SignupForm: React.FC<Props> = ({ onSignup, switchToLogin }) => {
       <input
         type="email"
         placeholder="Email"
+        className="input"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -65,31 +63,32 @@ const SignupForm: React.FC<Props> = ({ onSignup, switchToLogin }) => {
       <input
         type="password"
         placeholder="Password"
+        className="input"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
       />
-
       <select
         value={role}
         onChange={(e) => setRole(e.target.value as "guest" | "host")}
-        required
+        className="input"
       >
-        <option value={""} disabled>
-          Select a Role
-        </option>
         <option value="guest">Guest</option>
         <option value="host">Host</option>
       </select>
-
-      {error && <p className="error-message">{error}</p>}
-      <button type="submit">Sign Up</button>
-
-      <p className="text-sm">
+      {error && <p className="form-error">{error}</p>}
+      <button
+        className="btn btn-primary w-full"
+        type="submit"
+        disabled={loading}
+      >
+        {loading ? "Signing up..." : "Sign Up"}
+      </button>
+      <p className="form-footer">
         Already have an account?{" "}
         <button
           type="button"
-          className="text-blue-600"
+          className="form-link"
           onClick={() => navigate("/login")}
         >
           Log in

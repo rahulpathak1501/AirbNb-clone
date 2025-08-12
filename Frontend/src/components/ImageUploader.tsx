@@ -1,7 +1,5 @@
-// src/components/ImageUploader.tsx
 import React, { useState } from "react";
-import axios from "axios";
-
+import { uploadApi } from "../apiServices/apiServices";
 type Props = {
   onUpload: (url: string) => void;
   defaultImage?: string;
@@ -22,21 +20,10 @@ const ImageUploader: React.FC<Props> = ({ onUpload, defaultImage }) => {
 
   const handleUpload = async () => {
     if (!image) return;
-
-    const formData = new FormData();
-    formData.append("image", image);
-
     try {
       setUploading(true);
-      const res = await axios.post(
-        "http://localhost:5000/api/upload",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-
-      onUpload(res.data.url); // send Cloudinary URL to parent
+      const res = await uploadApi.uploadImage(image);
+      onUpload(res.data.url);
     } catch (err) {
       console.error("Upload failed", err);
       alert("Image upload failed");

@@ -4,6 +4,7 @@ import { Booking } from "../types/Booking";
 import "../style/MyBookings.css";
 import { Link, useNavigate } from "react-router-dom";
 import ImageWithFallback from "../components/ImageWithFallback";
+import { bookingApi } from "../apiServices/apiServices";
 
 const MyBookings: React.FC = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -14,11 +15,7 @@ const MyBookings: React.FC = () => {
   const fetchBookings = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`${apiUrl}/bookings`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await bookingApi.getBookings();
       setBookings(res.data);
     } catch (err) {
       console.error("Failed to load bookings", err);
@@ -37,11 +34,7 @@ const MyBookings: React.FC = () => {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`${apiUrl}/bookings/${bookingId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await bookingApi.cancelBooking(bookingId);
       setBookings((prev) =>
         prev.map((b) =>
           b._id === bookingId ? { ...b, status: "cancelled" } : b

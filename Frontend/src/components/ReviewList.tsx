@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { FaStar } from "react-icons/fa";
 import "../style/ReviewList.css";
-
+import { reviewApi } from "../apiServices/apiServices";
 export type Review = {
   _id: string;
   rating: number;
@@ -24,8 +23,6 @@ const ReviewList: React.FC<Props> = ({
   currentUserId,
   onRefresh,
 }) => {
-  // const apiUrl = import.meta.env.VITE_API_URL;
-  const apiUrl = "http://localhost:5000";
   const [editReviewId, setEditReviewId] = useState<string | null>(null);
   const [editedComment, setEditedComment] = useState("");
   const [editedRating, setEditedRating] = useState(0);
@@ -33,15 +30,10 @@ const ReviewList: React.FC<Props> = ({
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this review?")) return;
     try {
-      await axios.delete(`${apiUrl}/reviews/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
+      await reviewApi.deleteReview(id);
       onRefresh();
     } catch (err) {
-      console.error(err);
+      console.error("Failed to delete review", err);
     }
   };
 
@@ -52,24 +44,16 @@ const ReviewList: React.FC<Props> = ({
   };
 
   const handleUpdate = async () => {
+    if (!editReviewId) return;
     try {
-      await axios.put(
-        `${apiUrl}/reviews/${editReviewId}`,
-        {
-          comment: editedComment,
-          rating: editedRating,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
+      await reviewApi.updateReview(editReviewId, {
+        comment: editedComment,
+        rating: editedRating,
+      });
       setEditReviewId(null);
       onRefresh();
     } catch (err) {
-      console.error(err);
+      console.error("Failed to update review", err);
     }
   };
 

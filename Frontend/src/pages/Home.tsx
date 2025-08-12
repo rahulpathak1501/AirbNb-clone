@@ -4,6 +4,7 @@ import { Property } from "../types/Property";
 import SearchBar from "../components/SearchBar";
 import PropertyCard from "../components/PropertyCard";
 import "../style/Home.css";
+import { propertyApi } from "../apiServices/apiServices";
 
 const Home: React.FC = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -15,12 +16,11 @@ const Home: React.FC = () => {
 
   const fetchProperties = async (query = "", guests = 0) => {
     try {
-      const res = await axios.get(`${apiUrl}/properties`, {
-        params: {
-          location: query,
-          guests: guests,
-        },
-      });
+      let params = {
+        location: query,
+        guests: guests,
+      };
+      const res = await propertyApi.getAll(params);
       setProperties(res.data);
       setLoading(false);
     } catch (err) {

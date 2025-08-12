@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import PropertyDetail from "./components/PropertyDetails";
@@ -11,87 +11,52 @@ import AddPropertyForm from "./pages/AddPropertyForm";
 import BookingInvoice from "./pages/BookingConfirmation";
 import EditPropertyForm from "./pages/EditPropertyForm";
 import RoleBasedRoute from "./components/auth/RoleBasedRoute";
-import { User } from "./types/User";
 import NotFound from "./pages/NotFound";
+import { useAuth } from "./context/AuthContext";
 
 function App() {
-  const [user, setUser] = useState<User | null>(null);
-  const [showSignup, setShowSignup] = useState(false);
+  const { user, restoreUser } = useAuth();
 
   useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) {
-      setUser(JSON.parse(stored));
-    }
+    restoreUser();
   }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-    setShowSignup(false);
-  };
-
-  const handleAuthSuccess = () => {
-    const stored = localStorage.getItem("user");
-    if (stored) setUser(JSON.parse(stored));
-  };
 
   return (
     <>
-      <Navbar user={user} onLogout={handleLogout} />
+      <Navbar />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/property/:id" element={<PropertyDetail />} />
         <Route path="*" element={<NotFound />} />
 
-        {/* Auth Routes (login/signup) */}
+        {/* Auth Routes */}
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/signup" element={<SignupForm />} />
 
-        <>
-          <Route
-            path="/login"
-            element={
-              <LoginForm
-                onLogin={handleAuthSuccess}
-                switchToSignup={() => setShowSignup(true)}
-              />
-            }
-          />
-          <Route
-            path="/signup"
-            element={
-              <SignupForm
-                onSignup={handleAuthSuccess}
-                switchToLogin={() => setShowSignup(false)}
-              />
-            }
-          />
-        </>
-
-        {/* Guest-only Route */}
+        {/* Guest-only */}
         <Route
           path="/my-bookings"
           element={
-            <RoleBasedRoute user={user} allowedRoles={["guest"]}>
+            <RoleBasedRoute allowedRoles={["guest", "host"]}>
               <MyBookings />
             </RoleBasedRoute>
           }
         />
 
-        {/* Host-only Routes */}
+        {/* Host-only */}
         <Route
           path="/host/dashboard"
           element={
-            <RoleBasedRoute user={user} allowedRoles={["host"]}>
-              <HostDashboard user={user!} />
+            <RoleBasedRoute allowedRoles={["host"]}>
+              <HostDashboard user={user} />
             </RoleBasedRoute>
           }
         />
         <Route
           path="/host/add-property"
           element={
-            <RoleBasedRoute user={user} allowedRoles={["host"]}>
+            <RoleBasedRoute allowedRoles={["host"]}>
               <AddPropertyForm />
             </RoleBasedRoute>
           }
@@ -99,17 +64,17 @@ function App() {
         <Route
           path="/host/edit/:id"
           element={
-            <RoleBasedRoute user={user} allowedRoles={["host"]}>
+            <RoleBasedRoute allowedRoles={["host"]}>
               <EditPropertyForm />
             </RoleBasedRoute>
           }
         />
 
-        {/* Protected Booking Invoice (both guest/host can view) */}
+        {/* Protected Booking Invoice */}
         <Route
           path="/booking/:id/invoice"
           element={
-            <RoleBasedRoute user={user} allowedRoles={["guest", "host"]}>
+            <RoleBasedRoute allowedRoles={["guest", "host"]}>
               <BookingInvoice />
             </RoleBasedRoute>
           }

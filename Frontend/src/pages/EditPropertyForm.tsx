@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, data } from "react-router-dom";
 import axios from "axios";
 import "../style/AddPropertyForm.css";
+import { propertyApi, uploadApi } from "../apiServices/apiServices";
 
 const EditPropertyForm: React.FC = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -26,7 +27,7 @@ const EditPropertyForm: React.FC = () => {
   useEffect(() => {
     const fetchProperty = async () => {
       try {
-        const res = await axios.get(`${apiUrl}/properties/${id}`);
+        const res = await propertyApi.getById(id as string);
         const data = res.data;
         setFormData({
           title: data.title,
@@ -54,7 +55,7 @@ const EditPropertyForm: React.FC = () => {
     const formDataUpload = new FormData();
     formDataUpload.append("image", imageFile);
 
-    const res = await axios.post(`${apiUrl}/upload`, formDataUpload);
+    const res = await uploadApi.uploadImage(imageFile);
     return res.data.url;
   };
 
@@ -90,18 +91,12 @@ const EditPropertyForm: React.FC = () => {
       }
 
       const token = localStorage.getItem("token");
-
-      await axios.put(
-        `${apiUrl}/properties/${id}`,
-        {
-          ...formData,
-          images: [finalImageUrl],
-          amenities: formData.amenities.split(",").map((a) => a.trim()),
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const data = {
+        ...formData,
+        images: [finalImageUrl],
+        amenities: formData.amenities.split(",").map((a) => a.trim()),
+      };
+      await propertyApi.update(id, data);
 
       setMessage("Property updated successfully!");
       setTimeout(() => navigate("/host/dashboard"), 1000);

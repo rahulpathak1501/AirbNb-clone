@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "../style/AddPropertyForm.css";
+import { propertyApi } from "../apiServices/apiServices";
 
 const AddPropertyForm: React.FC = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -51,28 +52,21 @@ const AddPropertyForm: React.FC = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post(
-        `${apiUrl}/properties`,
-        {
-          title,
-          description,
-          location,
-          pricePerNight: price,
-          numberOfGuests: guests,
-          amenities: amenities
-            .split(",")
-            .map((a) => a.trim())
-            .filter(Boolean),
-          images: finalImageUrls,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const data = {
+        title,
+        description,
+        location,
+        pricePerNight: price,
+        numberOfGuests: guests,
+        amenities: amenities
+          .split(",")
+          .map((a) => a.trim())
+          .filter(Boolean),
+        images: finalImageUrls,
+      };
+      const res = await propertyApi.create(data);
 
-      if (response.status === 201) {
+      if (res.status === 201) {
         setMessage("Property listed successfully!");
         setTitle("");
         setDescription("");
@@ -85,7 +79,7 @@ const AddPropertyForm: React.FC = () => {
       }
     } catch (err: any) {
       console.error("Property creation failed:", err);
-      setMessage(err.response?.data?.msg || "Failed to add property.");
+      setMessage(err.res?.data?.msg || "Failed to add property.");
     }
   };
 
