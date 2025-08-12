@@ -25,7 +25,7 @@ const Home: React.FC = () => {
       setLoading(false);
     } catch (err) {
       console.error("Error fetching properties:", err);
-      setError(err);
+      setError(err instanceof Error ? err.message : String(err));
     }
   };
 

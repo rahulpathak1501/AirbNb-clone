@@ -9,6 +9,4 @@ export interface Property {
   numberOfGuests: number;
   description: string;
   amenities: string[];
-  latitude: number;
-  longitude: number;
 }
