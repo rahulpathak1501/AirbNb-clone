@@ -14,9 +14,6 @@ import ReviewForm from "./ReviewForm";
 import { propertyApi, reviewApi } from "../apiServices/apiServices";
 
 const PropertyDetail: React.FC = () => {
-  const token = localStorage.getItem("token");
-  console.log("Frontend token:", token);
-
   const { id } = useParams<{ id: string }>();
   const [property, setProperty] = useState<Property | null>(null);
   const [message, setMessage] = useState("");
@@ -40,7 +37,6 @@ const PropertyDetail: React.FC = () => {
     if (!property?._id) return;
     try {
       const res = await reviewApi.checkEligibility(property._id);
-      console.log("Eligibility API response:", res.data); // ✅ Debug
       setIsEligible(res.data.eligible);
     } catch (error) {
       console.warn("Review eligibility check failed:", error);

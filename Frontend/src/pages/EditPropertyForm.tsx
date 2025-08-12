@@ -101,7 +101,6 @@ const EditPropertyForm: React.FC = () => {
       setMessage("Property updated successfully!");
       setTimeout(() => navigate("/host/dashboard"), 1000);
     } catch (err: any) {
-      console.log(formData);
       console.error("Update failed:", err);
       setMessage(err.response?.data?.msg || "Failed to update property.");
     }
