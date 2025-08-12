@@ -20,10 +20,7 @@ const MapView: React.FC<MapViewProps> = ({ properties }) => {
       {properties.map((property) => (
         <Marker
           key={property._id}
-          position={[
-            Math.random() * 140 - 70, // Replace with property.latitude
-            Math.random() * 360 - 180, // Replace with property.longitude
-          ]}
+          position={[property.latitude, property.longitude]} // Use real coordinates
         >
           <Popup>
             <strong>{property.title}</strong>
