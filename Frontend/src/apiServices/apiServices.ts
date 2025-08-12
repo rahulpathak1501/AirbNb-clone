@@ -56,7 +56,7 @@ export const propertyApi = {
 
 // ---------- Host API ----------
 export const hostApi = {
-  getProperties: () => axiosClient.get("/properties/host"), // adjust if your backend route differs
+  getProperties: () => axiosClient.get("/properties/host"),
   getAnalytics: () => axiosClient.get("/properties/host/analytics"),
   deleteProperty: (id: string) => axiosClient.delete(`/properties/${id}`),
 };

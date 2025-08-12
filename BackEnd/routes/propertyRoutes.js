@@ -23,12 +23,69 @@ function formatProperty(p, avgRating = 0) {
   };
 }
 
+// ---------- HOST ROUTES FIRST ----------
+
+// 📍 GET /properties/host/analytics
+router.get("/host/analytics", auth, async (req, res) => {
+  try {
+    if (req.user.role !== "host") {
+      return res.status(403).json({ msg: "Only hosts can access analytics" });
+    }
+
+    const hostId = req.user._id;
+    const properties = await Property.find({ hostId });
+    const bookings = await Booking.find({
+      propertyId: { $in: properties.map((p) => p._id) },
+      status: "confirmed",
+    });
+
+    const totalBookings = bookings.length;
+    const totalEarnings = bookings.reduce(
+      (sum, booking) => sum + booking.totalPrice,
+      0
+    );
+
+    res.json({
+      totalListings: properties.length,
+      totalBookings,
+      totalEarnings,
+    });
+  } catch (err) {
+    console.error("Analytics error:", err);
+    res.status(500).json({ msg: "Failed to fetch analytics" });
+  }
+});
+
+// 📍 GET /properties/host - Get properties for current host
+router.get("/host", auth, async (req, res) => {
+  try {
+    const properties = await Property.find({ hostId: req.user._id }).lean();
+
+    // If you want same shape as public route, also compute avg ratings:
+    const ratings = await Review.aggregate([
+      { $match: { property: { $in: properties.map((p) => p._id) } } },
+      { $group: { _id: "$property", avgRating: { $avg: "$rating" } } },
+    ]);
+
+    const result = properties.map((p) => {
+      const r = ratings.find((x) => x._id.toString() === p._id.toString());
+      return formatProperty(p, r ? r.avgRating : 0);
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error("Failed to fetch host properties:", err);
+    res.status(400).json({ msg: "Failed to fetch host properties" });
+  }
+});
+
+// ---------- PUBLIC ROUTES ----------
+
 // 📌 GET /properties - Public list with filters
 router.get("/", async (req, res) => {
   try {
     const { location, guests } = req.query;
     const filter = {};
-
     if (location) filter.location = { $regex: location, $options: "i" };
     if (guests) filter.numberOfGuests = { $gte: parseInt(guests) };
 
@@ -52,7 +109,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 📌 GET /properties/:id - Single property in same shape as list
+// 📌 GET /properties/:id - Single property
 router.get("/:id", async (req, res) => {
   try {
     const property = await Property.findById(req.params.id).lean();
@@ -69,6 +126,8 @@ router.get("/:id", async (req, res) => {
     res.status(400).json({ msg: "Invalid property ID" });
   }
 });
+
+// ---------- CREATE / UPDATE / DELETE ----------
 
 // 📌 POST /properties - Host only
 router.post("/", auth, async (req, res) => {
@@ -91,7 +150,7 @@ router.post("/", auth, async (req, res) => {
     });
 
     const saved = await newProperty.save();
-    res.status(201).json(formatProperty(saved, 0)); // avgRating = 0 on create
+    res.status(201).json(formatProperty(saved, 0));
   } catch (err) {
     console.error("Error adding property:", err);
     res.status(500).json({ msg: "Server error while adding property" });
@@ -154,37 +213,6 @@ router.delete("/:id", auth, async (req, res) => {
   } catch (err) {
     console.error("Delete error:", err);
     res.status(500).json({ msg: "Server error" });
-  }
-});
-
-// 📍 GET /host/analytics - Host Dashboard Stats
-router.get("/host/analytics", auth, async (req, res) => {
-  try {
-    if (req.user.role !== "host") {
-      return res.status(403).json({ msg: "Only hosts can access analytics" });
-    }
-
-    const hostId = req.user._id;
-    const properties = await Property.find({ hostId });
-    const bookings = await Booking.find({
-      propertyId: { $in: properties.map((p) => p._id) },
-      status: "confirmed",
-    });
-
-    const totalBookings = bookings.length;
-    const totalEarnings = bookings.reduce(
-      (sum, booking) => sum + booking.totalPrice,
-      0
-    );
-
-    res.json({
-      totalListings: properties.length,
-      totalBookings,
-      totalEarnings,
-    });
-  } catch (err) {
-    console.error("Analytics error:", err);
-    res.status(500).json({ msg: "Failed to fetch analytics" });
   }
 });
 
