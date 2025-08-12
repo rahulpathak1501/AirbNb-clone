@@ -47,7 +47,7 @@ export const bookingApi = {
 
 // ---------- Properties API ----------
 export const propertyApi = {
-  getAll: (data: any) => axiosClient.get("/properties", data),
+  getAll: (params: any) => axiosClient.get("/properties", { params }),
   create: (data: any) => axiosClient.post("/properties", data),
   getById: (id: string) => axiosClient.get(`/properties/${id}`),
   update: (id: string | undefined, data: any) =>
