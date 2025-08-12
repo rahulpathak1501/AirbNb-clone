@@ -1,6 +1,6 @@
-import { useState } from "react";
-import properties from "../data/properties";
-// import ListingCard;
+import { useState, useEffect } from "react";
+import { Property } from "../types/Property";
+import { propertyApi } from "../apiServices/apiServices";
 import PropertyCard from "../components/PropertyCard";
 import Pagination from "./Pagination";
 import MapView from "../components/MapView";
@@ -8,6 +8,9 @@ import MapView from "../components/MapView";
 const ListingsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const listingsPerPage = 6;
   const indexOfLastListing = currentPage * listingsPerPage;
@@ -18,6 +21,26 @@ const ListingsPage = () => {
   );
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setLoading(true);
+        const res = await propertyApi.getAll({});
+        setProperties(res.data);
+      } catch (err) {
+        console.error("Error fetching properties:", err);
+        setError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, []);
+
+  if (loading) return <div className="p-4">Loading...</div>;
+  if (error) return <div className="p-4 text-red-500">{error}</div>;
 
   return (
     <div className="px-6 py-8 max-w-7xl mx-auto">
