@@ -19,7 +19,7 @@ const MapView: React.FC<MapViewProps> = ({ properties }) => {
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       {properties.map((property) => (
         <Marker
-          key={property.id}
+          key={property._id}
           position={[
             Math.random() * 140 - 70, // Replace with property.latitude
             Math.random() * 360 - 180, // Replace with property.longitude
